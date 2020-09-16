@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+lang="$1"
+
+if [[ -z "${lang}" ]]; then
+    echo "Usage: speak-ipa LANGUAGE"
+    exit 1;
+fi
+
+shift
+
+espeak_args=()
+voice="${lang}"
+while [[ -n "$1" ]]; do
+    if [[ "$1" == '-v' ]]; then
+        voice=''
+    fi
+
+    espeak_args+=("$1")
+    shift
+done
+
+if [[ -n "${voice}" ]]; then
+    espeak_args+=('-v' "${voice}")
+fi
+
+# -----------------------------------------------------------------------------
+
+# Directory of *this* script
+this_dir="$( cd "$( dirname "$0" )" && pwd )"
+src_dir="$(realpath "${this_dir}/..")"
+
+venv="${src_dir}/.venv"
+if [[ -d "${venv}" ]]; then
+    source "${venv}/bin/activate"
+fi
+
+export PYTHONPATH="${src_dir}:${PYTHONPATH}"
+python3 -m gruut_ipa convert ipa espeak | \
+    tee >(cat >&2) | \
+    while read line;
+    do espeak "${espeak_args[@]}" "${line}"
+    done
