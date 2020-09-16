@@ -18,6 +18,8 @@ from .constants import (  # noqa: F401
     VowelHeight,
     VowelPlacement,
 )
+from .espeak import espeak_to_ipa, ipa_to_espeak  # noqa: F401
+from .sampa import ipa_to_sampa, sampa_to_ipa  # noqa: F401
 
 _LOGGER = logging.getLogger("gruut_ipa")
 

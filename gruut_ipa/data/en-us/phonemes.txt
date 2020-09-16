@@ -11,7 +11,7 @@ i cit[y]
 # Elognated vowels
 iː s[ee]
 ɑː n[o]t
-uː s[oo]n
+uː s[oo]n u
 
 # Schwas
 ə [a]llow
@@ -48,7 +48,7 @@ z [z]ing
 h [h]am
 
 # Other consonants
-l [l]ong
+l [l]ong ɫ
 m [m]ock
 n [kn]ock
 ŋ thi[ng]
