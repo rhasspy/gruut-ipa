@@ -152,14 +152,19 @@ def do_phonemes(args):
         if os.isatty(sys.stdin.fileno()):
             print("Reading pronunciations from stdin...", file=sys.stderr)
 
-    phonemes_path = _DATA_DIR / args.language / "phonemes.txt"
+    if args.phonemes_file:
+        # Load phonemes from file
+        phonemes_path = Path(args.phonemes_file)
+    else:
+        # Load phonemes using language code
+        phonemes_path = _DATA_DIR / args.language / "phonemes.txt"
 
-    # Check language support
-    if not phonemes_path.is_file():
-        supported_languages = [d.name for d in _DATA_DIR.iterdir() if d.is_dir()]
-        _LOGGER.fatal("Unsupported language: %s", args.language)
-        _LOGGER.fatal("Supported languages: %s", supported_languages)
-        sys.exit(1)
+        # Check language support
+        if not phonemes_path.is_file():
+            supported_languages = [d.name for d in _DATA_DIR.iterdir() if d.is_dir()]
+            _LOGGER.fatal("Unsupported language: %s", args.language)
+            _LOGGER.fatal("Supported languages: %s", supported_languages)
+            sys.exit(1)
 
     _LOGGER.debug("Loading phonemes from %s", phonemes_path)
     with open(phonemes_path, "r") as phonemes_file:
@@ -285,6 +290,9 @@ def get_args() -> argparse.Namespace:
         "--keep-stress",
         action="store_true",
         help="Keep primary/secondary stress markers",
+    )
+    phonemes_parser.add_argument(
+        "--phonemes-file", help="Load phonemes from file instead of using language code"
     )
 
     # -------

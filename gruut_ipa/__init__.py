@@ -21,6 +21,8 @@ from .constants import (  # noqa: F401
 from .espeak import espeak_to_ipa, ipa_to_espeak  # noqa: F401
 from .sampa import ipa_to_sampa, sampa_to_ipa  # noqa: F401
 
+# -----------------------------------------------------------------------------
+
 _LOGGER = logging.getLogger("gruut_ipa")
 
 _DIR = Path(__file__).parent
@@ -457,6 +459,12 @@ class Phonemes:
     def __iter__(self):
         return iter(self.phonemes)
 
+    def __len__(self):
+        return len(self.phonemes)
+
+    def __getitem__(self, key):
+        return self.phonemes[key]
+
     @staticmethod
     def from_language(language: str) -> "Phonemes":
         """Load phonemes for a given language"""
@@ -537,7 +545,7 @@ class Phonemes:
         if keep_stress:
             # Strip stress
             for ipa_idx, ipa in enumerate(ipas):
-                if IPA.is_stress(ipa[0]):
+                if ipa and IPA.is_stress(ipa[0]):
                     ipas[ipa_idx] = ipa[1:]
                     ipa_stress[ipa_idx] = ipa[0]
 
