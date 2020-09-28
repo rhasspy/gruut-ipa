@@ -192,6 +192,11 @@ IPA_TO_SAMPA = {
     "\u0256\u0361\u0290": "dz`",
     "\u006b\u0361\u0078": "k_x",
     "\u0270\u0329": "r\\",
+    #
+    # Breaks
+    "|": "",
+    "\u2016": "",
+    "#": "",
 }
 
 SAMPA_TO_IPA = {v: k for k, v in IPA_TO_SAMPA.items() if v}
