@@ -24,6 +24,9 @@ class IPA(str, Enum):
     BREAK_MAJOR = "\u2016"  # ‖
     BREAK_WORD = "#"
 
+    INTONATION_RISING = "\u2197"  # ↗
+    INTONATION_FALLING = "\u2198"  # ↘
+
     BRACKET_PHONETIC_LEFT = "["
     BRACKET_PHONETIC_RIGHT = "]"
     BRACKET_PHONEMIC_LEFT = "/"
@@ -76,6 +79,11 @@ class IPA(str, Enum):
             IPA.BREAK_MAJOR,
             IPA.BREAK_WORD,
         }
+
+    @staticmethod
+    def is_intonation(codepoint: str) -> bool:
+        """True if a rising or falling IPA intonation symbol"""
+        return codepoint in {IPA.INTONATION_RISING, IPA.INTONATION_FALLING}
 
 
 class Stress(str, Enum):

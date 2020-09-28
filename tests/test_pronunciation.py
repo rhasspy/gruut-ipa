@@ -2,7 +2,7 @@
 """Tests for Pronunciation class"""
 import unittest
 
-from gruut_ipa import Pronunciation
+from gruut_ipa import IPA, Pronunciation
 
 
 class PronunciationTestCase(unittest.TestCase):
@@ -11,7 +11,7 @@ class PronunciationTestCase(unittest.TestCase):
     def test_from_string(self):
         """Test Pronuncation.from_string"""
         # "Yes, choose IPA."
-        pron_str = "ˈjɛs|ˈt͡ʃuːz aɪpiːeɪ‖"
+        pron_str = "↗ˈjɛs|ˈt͡ʃuːz#↘aɪpiːeɪ‖"
 
         pron = Pronunciation.from_string(pron_str, keep_stress=False)
 
@@ -20,10 +20,28 @@ class PronunciationTestCase(unittest.TestCase):
             phone_strs, ["j", "ɛ", "s", "t͡ʃ", "uː", "z", "a", "ɪ", "p", "iː", "e", "ɪ"]
         )
 
-        phone_break_strs = [pb.text for pb in pron.phones_and_breaks]
+        phone_strs = [p.text for p in pron]
         self.assertEqual(
-            phone_break_strs,
-            ["j", "ɛ", "s", "|", "t͡ʃ", "uː", "z", "a", "ɪ", "p", "iː", "e", "ɪ", "‖"],
+            phone_strs,
+            [
+                IPA.INTONATION_RISING,
+                "j",
+                "ɛ",
+                "s",
+                IPA.BREAK_MINOR,
+                "t͡ʃ",
+                "uː",
+                "z",
+                IPA.BREAK_WORD,
+                IPA.INTONATION_FALLING,
+                "a",
+                "ɪ",
+                "p",
+                "iː",
+                "e",
+                "ɪ",
+                IPA.BREAK_MAJOR,
+            ],
         )
 
 

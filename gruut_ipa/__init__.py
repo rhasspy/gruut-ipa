@@ -184,24 +184,56 @@ class Break:
         return Break(break_type)
 
 
+class Intonation:
+    """IPA rising/falling intonation"""
+
+    def __init__(self, rising: bool):
+        self.rising = rising
+
+        if self.rising:
+            self.text = IPA.INTONATION_RISING
+        else:
+            self.text = IPA.INTONATION_FALLING
+
+    def __repr__(self) -> str:
+        return self.text
+
+    @staticmethod
+    def from_string(intonation_str: str) -> "Intonation":
+        """Parse intonation from string"""
+        if intonation_str == IPA.INTONATION_RISING:
+            rising = True
+        elif intonation_str == IPA.INTONATION_FALLING:
+            rising = False
+        else:
+            raise ValueError(f"Unrecognized intonation type: {intonation_str}")
+
+        return Intonation(rising)
+
+
 # -----------------------------------------------------------------------------
 
 
 class Pronunciation:
     """Collection of phones and breaks for some unit of text (word, sentence, etc.)"""
 
-    def __init__(self, phones_and_breaks: typing.List[typing.Union[Phone, Break]]):
-        self.phones_and_breaks = phones_and_breaks
+    def __init__(
+        self, phones_and_others: typing.List[typing.Union[Phone, Break, Intonation]]
+    ):
+        self.phones_and_others = phones_and_others
 
         self.phones: typing.List[Phone] = []
         self.breaks: typing.List[Break] = []
+        self.intonations: typing.List[Intonation] = []
 
-        # Decompose into phones and breaks
-        for pb in self.phones_and_breaks:
-            if isinstance(pb, Phone):
-                self.phones.append(pb)
-            elif isinstance(pb, Break):
-                self.breaks.append(pb)
+        # Decompose into phones, breaks, and intonations
+        for p in self.phones_and_others:
+            if isinstance(p, Phone):
+                self.phones.append(p)
+            elif isinstance(p, Break):
+                self.breaks.append(p)
+            elif isinstance(p, Intonation):
+                self.intonations.append(p)
 
         self._text = ""
 
@@ -209,7 +241,7 @@ class Pronunciation:
     def text(self) -> str:
         """Get text representation of pronunciation (NFC normalized)"""
         if not self._text:
-            self._text = "".join(pb.text for pb in self.phones_and_breaks)
+            self._text = "".join(p.text for p in self.phones_and_others)
 
         return self._text
 
@@ -217,7 +249,7 @@ class Pronunciation:
         return self.text
 
     def __iter__(self):
-        return iter(self.phones_and_breaks)
+        return iter(self.phones_and_others)
 
     @staticmethod
     def from_string(pron_str: str, keep_stress: bool = True) -> "Pronunciation":
@@ -248,8 +280,8 @@ class Pronunciation:
                 # Skip whitespace, brackets, and syllable breaks
                 continue
 
-            if IPA.is_break(codepoint):
-                # Keep minor/major/word breaks
+            if IPA.is_break(codepoint) or IPA.is_intonation(codepoint):
+                # Keep minor/major/word breaks and intonation markers
                 new_cluster = True
 
             if IPA.is_stress(codepoint):
@@ -283,14 +315,16 @@ class Pronunciation:
         if cluster:
             clusters.append(cluster)
 
-        phones_and_breaks: typing.List[typing.Union[Phone, Break]] = []
+        phones_and_others: typing.List[typing.Union[Phone, Break, Intonation]] = []
         for cluster in clusters:
             if IPA.is_break(cluster):
-                phones_and_breaks.append(Break.from_string(cluster))
+                phones_and_others.append(Break.from_string(cluster))
+            elif IPA.is_intonation(cluster):
+                phones_and_others.append(Intonation.from_string(cluster))
             else:
-                phones_and_breaks.append(Phone.from_string(cluster))
+                phones_and_others.append(Phone.from_string(cluster))
 
-        return Pronunciation(phones_and_breaks)
+        return Pronunciation(phones_and_others)
 
 
 # -----------------------------------------------------------------------------
