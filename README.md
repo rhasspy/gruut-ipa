@@ -4,7 +4,7 @@ Library for manipulating [International Phonetic Alphabet](https://en.wikipedia.
 
 Features include:
 
-* Getting the category and details of a phone, e.g. open front unrounded vowel
+* Getting the category and details of a phone, e.g. "open front unrounded vowel" for ɶ
 * Splitting IPA pronunciations into groups of:
     * Phones (`/ˈt͡ʃuːz/` to `ˈt͡ʃ uː z` )
     * Phonemes (`/kˈaʊ/` to `k ˈaʊ` for U.S. English)
@@ -12,7 +12,12 @@ Features include:
     * IPA
     * [espeak](https://github.com/espeak-ng/)
     * [sampa](https://www.phon.ucl.ac.uk/home/sampa/)
+    
+Supported Languages:
 
+* U.S. English (`en-us`)
+* Dutch (`nl`)
+    
 ## Installing
 
 ```sh
@@ -34,6 +39,42 @@ Install these with:
 $ sudo apt-get install espeak jq
 ```
 
+## Phones and Phonemes
+
+![IPA phones](img/ipa.png)
+
+Phones in IPA are composed of different components:
+
+* Letters
+    * [Non-combining](https://en.wikipedia.org/wiki/Character_(computing)#Terminology) Unicode characters that represent a distinct human sound (phone)
+* Suprasegmentals
+    * [Non-combining](https://en.wikipedia.org/wiki/Character_(computing)#Terminology) Unicode characters that represent language features above individual vowels or consonants
+    * Stress (ˈˌ), elongation (ː), linking/ties (t͡s), and short/long breaks (| ‖) are suprasegmentals
+* Diacritics
+    * [Combining characters](https://en.wikipedia.org/wiki/Combining_character) that provide additional information about a phone's pronunciation, such as [nasalation](https://en.wikipedia.org/wiki/Nasalization)
+    
+See [IPA Chart](https://www.ipachart.com/) for more details.
+
+### Phonemes
+
+While phones represent individual sounds, phonemes are the phonetic units of a language that meaningfully distinguish words. A phoneme may be realized by many different phones. For example, the `/r/` in [Standard German](https://en.wikipedia.org/wiki/Standard_German_phonology) can be realized as a uvular fricative (χ/ʁ), a uvular approximant (ɹ), or a uvular tap or trill (ʀ/r).
+
+A phoneme may also be composed of multiple phones, such as the [dipthong](https://en.wikipedia.org/wiki/Diphthong) `aʊ` in U.S. English (the "ow" in "cow").
+
+Supported languages in `gruut-ipa` contain a `phonemes.txt` file in the `gruut_ipa/data` directory. This file has the following format:
+
+```text
+<phoneme> <example> [<replace> ...]
+```
+
+where `<phoneme>` is a set of IPA letters, like `ɶ` or `aʊ`. The `<example>` is a word whose pronunciation contains the `<phoneme>`. After that, there are one or more optional `<replace>` strings that will be replaced with `<phoneme>`. The German `/r/` example from above might be represented as:
+
+```text
+r brot χ ʁ ɹ ʀ
+```
+
+Phonemes for a given language come from [phonological analyses](https://en.wikipedia.org/wiki/Template:Language_phonologies) and from [public databases](https://phoible.org/). Ultimately, they are geared towards capturing pronunciations from [Wiktionary](https://www.wiktionary.org/).
+ 
 ## Usage
 
 Print JSON information about phones:
