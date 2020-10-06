@@ -32,6 +32,7 @@ data_files = [str(f.relative_to(module_dir)) for f in data_dir.rglob("*")]
 
 setuptools.setup(
     name="gruut-ipa",
+    description="Library for manipulating pronunciations using the International Phonetic Alphabet (IPA)",
     version=version,
     author="Michael Hansen",
     author_email="mike@rhasspy.org",
