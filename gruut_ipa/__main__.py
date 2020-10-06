@@ -79,7 +79,7 @@ def do_print(args):
         phone_dict["espeak"] = ipa_to_espeak(phone_str)
         phone_dict["sampa"] = ipa_to_sampa(phone_str)
 
-        phone_dict_str = json.dumps(phone_dict)
+        phone_dict_str = json.dumps(phone_dict, ensure_ascii=False)
         print(phone_dict_str)
 
 
@@ -104,7 +104,7 @@ def do_describe(args):
         line = line.strip()
         if line:
             line_phone = Phoneme(text=line)
-            phone_str = json.dumps(line_phone.to_dict())
+            phone_str = json.dumps(line_phone.to_dict(), ensure_ascii=False)
             print(phone_str)
             sys.stdout.flush()
 
