@@ -13,6 +13,7 @@ class IPA(str, Enum):
     HALF_LONG = "\u02D1"  # eˑ
     EXTRA_SHORT = "\u0306"  # ə̆
     NASAL = "\u0303"  # ẽ
+    RAISED = "\u031D"  # r̝
     TIE_ABOVE = "\u0361"  # ͡
     TIE_BELOW = "\u035C"  # ͜
 
@@ -45,6 +46,11 @@ class IPA(str, Enum):
     def is_nasal(codepoint: str) -> bool:
         """True if nasalated diacritic"""
         return codepoint == IPA.NASAL
+
+    @staticmethod
+    def is_raised(codepoint: str) -> bool:
+        """True if rased diacritic"""
+        return codepoint == IPA.RAISED
 
     @staticmethod
     def is_stress(codepoint: str) -> bool:

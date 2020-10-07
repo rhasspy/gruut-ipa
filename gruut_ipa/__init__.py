@@ -41,6 +41,7 @@ class Phone:
         stress: Stress = Stress.NONE,
         is_long: bool = False,
         is_nasal: bool = False,
+        is_raised: bool = False,
         diacritics: typing.Optional[typing.Set[str]] = None,
         suprasegmentals: typing.Optional[typing.Set[str]] = None,
     ):
@@ -48,6 +49,7 @@ class Phone:
         self.stress: Stress = stress
         self.is_long: bool = is_long
         self.is_nasal: bool = is_nasal
+        self.is_raised: bool = is_raised
 
         self.diacritics: typing.Set[str] = diacritics or set()
         self.suprasegmentals: typing.Set[str] = suprasegmentals or set()
@@ -63,6 +65,9 @@ class Phone:
 
         if self.is_nasal:
             self.diacritics.add(IPA.NASAL)
+
+        if self.is_raised:
+            self.diacritics.add(IPA.RAISED)
 
         self._text: str = ""
 
@@ -88,6 +93,10 @@ class Phone:
         # Diacritics
         if self.is_nasal:
             self._text += IPA.NASAL
+
+        # Diacritics
+        if self.is_raised:
+            self._text += IPA.RAISED
 
         # Post-letter suprasegmentals
         if self.is_long:
@@ -135,6 +144,9 @@ class Phone:
             elif IPA.is_nasal(c):
                 # Check for nasalation
                 kwargs["is_nasal"] = True
+            elif IPA.is_raised(c):
+                # Check for raised articulation
+                kwargs["is_raised"] = True
             elif IPA.is_bracket(c) or IPA.is_break(c):
                 # Skip brackets/syllable breaks
                 pass
@@ -341,6 +353,7 @@ class Phoneme:
         self.stress: Stress = Stress.NONE
         self.elongated: bool = False
         self.nasalated: bool = False
+        self.raised: bool = False
         self._extra_combining: typing.List[str] = []
 
         # Decompose into base and combining characters
@@ -359,6 +372,9 @@ class Phoneme:
             elif IPA.is_nasal(c):
                 # Check for nasalation
                 self.nasalated = True
+            elif IPA.is_raised(c):
+                # Check for raised articulation
+                self.raised = True
             elif IPA.is_bracket(c) or IPA.is_break(c):
                 # Skip brackets/syllable breaks
                 pass
@@ -404,6 +420,9 @@ class Phoneme:
 
         if self.nasalated:
             self._text += IPA.NASAL
+
+        if self.raised:
+            self._text += IPA.RAISED
 
         for c in self._extra_combining:
             self._text += c
@@ -459,6 +478,7 @@ class Phoneme:
         props["type"] = type_name
 
         props["nasalated"] = self.nasalated
+        props["raised"] = self.raised
         props["elongated"] = self.elongated
 
         return props
