@@ -276,6 +276,7 @@ _CONSONANTS = [
     Consonant("ɱ", ConsonantType.NASAL, ConsonantPlace.LABIO_DENTAL, True),
     Consonant("n", ConsonantType.NASAL, ConsonantPlace.ALVEOLAR, True),
     Consonant("ɳ", ConsonantType.NASAL, ConsonantPlace.RETROFLEX, True),
+    Consonant("ɲ", ConsonantType.NASAL, ConsonantPlace.PALATAL, True),
     Consonant("ŋ", ConsonantType.NASAL, ConsonantPlace.VELAR, True),
     Consonant("ɴ", ConsonantType.NASAL, ConsonantPlace.UVULAR, True),
     #
