@@ -3,8 +3,8 @@
 # Short vowels
 a p[a]k æ ɑ
 ɛ z[e] e ə
-ɪ tad[y] i y
-u tom[u] ʊ ʌ
+ɪ tad[y] i y ɪ̯
+u tom[u] ʊ ʌ ʊ̯
 o ah[o]j ɔ ᴐ ɒ
 
 # Long vowels
@@ -20,15 +20,15 @@ eu̯ [eu]ro ɛʊ̯
 ou̯ form[ou] ɔʊ̯
 
 # Consonants
-r p[r]o ɹ ɾ rː
-r̝ řád
+r p[r]o ɹ ɾ rː r̩
+r̝ řád r̝̊
 t [t]oho
 k pa[k]
-l pů[l]
+l pů[l] l̩
 s je[s]tli
-n d[n]eska ŋ nː
+n d[n]eska ŋ nː n̩
 v [v]lastně
-m [m]u ɱ
+m [m]u ɱ m̩
 p [p]ůl
 d [d]alší
 j aho[j] ʲ
