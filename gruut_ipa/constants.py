@@ -1,4 +1,6 @@
 """Enums, vowels, and consonants for gruut-ipa"""
+import typing
+import unicodedata
 from dataclasses import dataclass
 from enum import Enum
 
@@ -90,6 +92,31 @@ class IPA(str, Enum):
     def is_intonation(codepoint: str) -> bool:
         """True if a rising or falling IPA intonation symbol"""
         return codepoint in {IPA.INTONATION_RISING, IPA.INTONATION_FALLING}
+
+    @staticmethod
+    def graphemes(codepoints: str) -> typing.List[str]:
+        """Split a string into graphemes"""
+        codepoints = unicodedata.normalize("NFD", codepoints)
+
+        graphemes = []
+        grapheme = ""
+
+        for c in codepoints:
+            if unicodedata.combining(c) > 0:
+                grapheme += c
+            elif grapheme:
+                # Next grapheme
+                graphemes.append(unicodedata.normalize("NFC", grapheme))
+                grapheme = c
+            else:
+                # Start of grapheme
+                grapheme = c
+
+        if grapheme:
+            # Final grapheme
+            graphemes.append(unicodedata.normalize("NFC", grapheme))
+
+        return graphemes
 
 
 class Stress(str, Enum):

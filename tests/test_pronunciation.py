@@ -44,6 +44,13 @@ class PronunciationTestCase(unittest.TestCase):
             ],
         )
 
+    def test_diacritics(self):
+        """Test Pronuncation.from_string with extra diacritics"""
+        pron_str = "ɔʊ̯"
+        pron = Pronunciation.from_string(pron_str)
+
+        self.assertEqual(pron.text, pron_str)
+
 
 # -----------------------------------------------------------------------------
 

@@ -91,12 +91,8 @@ class Phone:
         self._text += self.letters
 
         # Diacritics
-        if self.is_nasal:
-            self._text += IPA.NASAL
-
-        # Diacritics
-        if self.is_raised:
-            self._text += IPA.RAISED
+        for diacritic in self.diacritics:
+            self._text += diacritic
 
         # Post-letter suprasegmentals
         if self.is_long:
@@ -263,6 +259,9 @@ class Pronunciation:
     def __iter__(self):
         return iter(self.phones_and_others)
 
+    def __getitem__(self, idx):
+        return self.phones_and_others[idx]
+
     @staticmethod
     def from_string(pron_str: str, keep_stress: bool = True) -> "Pronunciation":
         """Split an IPA pronunciation into phones.
@@ -387,6 +386,7 @@ class Phoneme:
 
         # Re-normalize and combine letters
         self.letters = unicodedata.normalize("NFC", self.letters)
+        self.letters_graphemes = IPA.graphemes(self.letters)
 
         # Categorize
         self.vowel: typing.Optional[Vowel] = VOWELS.get(self.letters)
@@ -606,6 +606,7 @@ class Phonemes:
         num_ipas: int = len(ipas)
 
         # pylint: disable=C0200
+        has_mapped = False
         for ipa_idx in range(len(ipas)):
             ipa = ipas[ipa_idx]
             if ipa is None:
@@ -622,6 +623,7 @@ class Phonemes:
                             map_match = False
 
                     if map_match:
+                        has_mapped = True
                         ipa = dest_ipa
 
                         # Replace
@@ -631,6 +633,26 @@ class Phonemes:
                         for src_idx in range(1, len(src_ipas)):
                             ipas[ipa_idx + src_idx] = None
                         break
+
+        # ---------------------------------------------------------------------
+
+        if has_mapped:
+            # Need to re-split and combine
+            replaced_ipas = []
+            for ipa in ipas:
+                if ipa:
+                    replaced_ipas.extend(
+                        [p.text for p in Pronunciation.from_string(ipa)]
+                    )
+        else:
+            replaced_ipas = ipas
+
+        # Second pass
+        for ipa_idx in range(len(replaced_ipas)):
+            ipa = replaced_ipas[ipa_idx]
+            if ipa is None:
+                # Skip replaced piece
+                continue
 
             phoneme_match = False
             for phoneme_ipas, phoneme in self._phonemes_sorted:
@@ -644,7 +666,10 @@ class Phonemes:
                             phoneme_stress or ipa_stress[ipa_idx + phoneme_idx]
                         )
 
-                        if phoneme_ipas[phoneme_idx] != ipas[ipa_idx + phoneme_idx]:
+                        if (
+                            phoneme_ipas[phoneme_idx]
+                            != replaced_ipas[ipa_idx + phoneme_idx]
+                        ):
                             phoneme_match = False
                             break
 
@@ -661,7 +686,7 @@ class Phonemes:
 
                         # Patch ipas to skip replaced pieces
                         for phoneme_idx in range(1, len(phoneme_ipas)):
-                            ipas[ipa_idx + phoneme_idx] = None
+                            replaced_ipas[ipa_idx + phoneme_idx] = None
 
                         break
 
