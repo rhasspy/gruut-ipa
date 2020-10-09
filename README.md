@@ -17,6 +17,7 @@ Supported Languages:
 
 * U.S. English (`en-us`)
 * Dutch (`nl`)
+* Czech (`cs-cz`)
     
 ## Installing
 
