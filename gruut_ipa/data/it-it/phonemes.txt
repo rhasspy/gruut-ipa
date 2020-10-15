@@ -1,0 +1,45 @@
+# https://en.wikipedia.org/wiki/Italian_phonology
+
+# Short vowels
+a senz[a] à ɑ̃ ɒ æ ä ɑ
+e p[e]rò
+o un[o] ʊ
+i cos[ì] ɪ I ì
+u t[u]tte u̯
+ɛ ad[e]sso  ə
+ɔ c[o]lla ɔ̃
+
+# Long vowels
+ɛː g[e]lo
+ɔː [o]ro
+oː levat[o]
+uː concl[u]so
+ɪː dat[i] iː 
+aː s[a]le
+eː cr[e]diti
+
+# Consonants
+b [b]ella
+f [f]orte
+z pae[s]e
+h lung[h]ezza
+k [q]uesto c
+j d[i]eci
+m al[m]eno
+n a[n]cora ŋ
+ɲ o[gn]uno
+p [p]erò
+r pe[r]ò ʁ ɹ
+s [s]ia
+t quan[t]o
+l so[l]tanto
+d [d]ue
+d͡ʒ [g]ente dʒ
+t͡s for[z]a ts
+d͡z [z]ona dz
+t͡ʃ per[ci]ò tʃ
+ʃ u[s]cita
+w q[u]attro
+ʎ consi[gli]o
+ɡ [g]rave g
+v a[v]anti
