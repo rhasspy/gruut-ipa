@@ -38,12 +38,28 @@ def main():
 
 def do_print(args):
     """Print known IPA phones"""
-    from . import Phoneme, VOWELS, CONSONANTS, SCHWAS
+    from . import Phoneme, Phonemes, VOWELS, CONSONANTS, SCHWAS
     from .espeak import ipa_to_espeak
     from .sampa import ipa_to_sampa
 
+    allowed_phonemes: typing.Set[str] = set()
+
+    if args.language:
+        # Load phonemes using language code
+        phonemes_path = _DATA_DIR / args.language / "phonemes.txt"
+
+        _LOGGER.debug("Loading phonemes from %s", phonemes_path)
+        with open(phonemes_path, "r") as phonemes_file:
+            phonemes = Phonemes.from_text(phonemes_file)
+
+        allowed_phonemes.update(p.text for p in phonemes)
+
     for phone_str in sorted(itertools.chain(VOWELS, CONSONANTS, SCHWAS)):
         phone = Phoneme(phone_str)
+
+        if allowed_phonemes and (phone.text not in allowed_phonemes):
+            # Skip phoneme outside language
+            continue
 
         description = ""
         if phone.vowel:
@@ -238,6 +254,9 @@ def get_args() -> argparse.Namespace:
     # print
     # -----
     print_parser = sub_parsers.add_parser("print", help="Print all known IPA phones")
+    print_parser.add_argument(
+        "--language", help="Only print phones from a specific language"
+    )
     print_parser.set_defaults(func=do_print)
 
     # --------
