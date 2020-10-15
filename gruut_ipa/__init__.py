@@ -2,6 +2,7 @@
 import logging
 import typing
 import unicodedata
+from collections import defaultdict
 from pathlib import Path
 
 from .constants import (  # noqa: F401
@@ -595,7 +596,7 @@ class Phonemes:
 
         # Get text for IPA phones
         ipas = [pb.text for pb in pron]
-        ipa_stress = [""] * len(ipas)
+        ipa_stress = defaultdict(str)
         if keep_stress:
             # Strip stress
             for ipa_idx, ipa in enumerate(ipas):
@@ -639,13 +640,20 @@ class Phonemes:
         if has_mapped:
             # Need to re-split and combine
             replaced_ipas = []
-            for ipa in ipas:
+            replaced_stress = defaultdict(str)
+
+            for ipa_idx, ipa in enumerate(ipas):
+                replaced_stress[len(replaced_ipas)] = ipa_stress[ipa_idx]
+
                 if ipa:
                     replaced_ipas.extend(
                         [p.text for p in Pronunciation.from_string(ipa)]
                     )
+
+            num_ipas = len(replaced_ipas)
         else:
             replaced_ipas = ipas
+            replaced_stress = ipa_stress
 
         # Second pass
         for ipa_idx in range(len(replaced_ipas)):
