@@ -1,45 +1,37 @@
 # https://en.wikipedia.org/wiki/Italian_phonology
 
-# Short vowels
-a senz[a] à ɑ̃ ɒ æ ä ɑ
-e p[e]rò
-o un[o] ʊ
-i cos[ì] ɪ I ì
-u t[u]tte u̯
-ɛ ad[e]sso  ə
-ɔ c[o]lla ɔ̃
-
-# Long vowels
-ɛː g[e]lo
-ɔː [o]ro
-oː levat[o]
-uː concl[u]so
-ɪː dat[i] iː 
-aː s[a]le
-eː cr[e]diti
+# Vowels
+ɛ ad[e]sso ɛː ə
+ɔ c[o]lla ɔː ɔ̃
+a senz[a] aː à ɑ̃ ɒ æ ä ɑ
+e p[e]rò eː
+i cos[ì] iː ɪ I ì ɪː
+o un[o] oː ʊ
+u t[u]tte uː u̯
 
 # Consonants
-b [b]ella
-f [f]orte
-z pae[s]e
-h lung[h]ezza
-k [q]uesto c
-j d[i]eci
-m al[m]eno
-n a[n]cora ŋ
 ɲ o[gn]uno
+ʎ consi[gli]o
+ʃ u[s]cita
+b [b]ella
+d [d]ue
+d͡ʒ [g]ente dʒ
+d͡z [z]ona dz
+f [f]orte
+ɡ [g]rave g
+j d[i]eci
+k [q]uesto c
+l so[l]tanto
+m al[m]eno
+n a[n]cora
+ɱ i[n]fame
+ŋ a[n]che
 p [p]erò
 r pe[r]ò ʁ ɹ
 s [s]ia
 t quan[t]o
-l so[l]tanto
-d [d]ue
-d͡ʒ [g]ente dʒ
-t͡s for[z]a ts
-d͡z [z]ona dz
 t͡ʃ per[ci]ò tʃ
-ʃ u[s]cita
-w q[u]attro
-ʎ consi[gli]o
-ɡ [g]rave g
+t͡s for[z]a ts
 v a[v]anti
+w q[u]attro
+z pae[s]e
