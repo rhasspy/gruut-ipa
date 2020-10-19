@@ -1,5 +1,6 @@
 """Classes for dealing with phones and phonemes"""
 import logging
+import re
 import typing
 import unicodedata
 from collections import defaultdict
@@ -506,7 +507,10 @@ class Phonemes:
         self.phonemes = phonemes or []
         self.ipa_map = ipa_map or {}
 
-        self._ipa_map_sorted = None
+        # Regex for replacing IPA
+        self._ipa_map_regex = None
+
+        # Phonemes sorted by descreasing length
         self._phonemes_sorted = None
 
         self.update()
@@ -558,15 +562,35 @@ class Phonemes:
 
     def update(self):
         """Call after modifying phonemes or IPA map to re-sort"""
-        # Split map keys and sort by reverse length
-        split_ipa_map = [
-            ([pb.text for pb in Pronunciation.from_string(k)], v)
-            for k, v in self.ipa_map.items()
-        ]
+        # Create single regex that will be used to replace IPA.
+        # The final regex is of the form (AAA|BB|C) where each case is in
+        # decreasing length order.
+        #
+        # If the replacement is >= to the length of the text to match, then the
+        # replacement is straightforward.
+        #
+        # If it is smaller *and* a substring, however, we need to be careful.
+        # For example, replacing "e" with "eɪ" in the string "beɪ" will produce
+        # "beeɪ" when we want it to be "beɪ".
+        #
+        # So the substring case becomes "e(?!ɪ)" which uses a negative lookahead
+        # to avoid the problem.
+        cases = []
+        for match_text, replace_text in sorted(
+            self.ipa_map.items(), key=lambda kv: len(kv[0]), reverse=True
+        ):
+            num_extra = len(replace_text) - len(match_text)
+            if (num_extra > 0) and replace_text.startswith(match_text):
+                cases.append(
+                    "{}(?!{})".format(
+                        re.escape(match_text[:num_extra]),
+                        re.escape(replace_text[num_extra:]),
+                    )
+                )
+            else:
+                cases.append(re.escape(match_text))
 
-        self._ipa_map_sorted = sorted(
-            split_ipa_map, key=lambda kv: len(kv[0]), reverse=True
-        )
+        self._ipa_map_regex = re.compile("({})".format("|".join(cases)))
 
         # Split phonemes and sort by reverse length
         split_phonemes = [
@@ -582,10 +606,20 @@ class Phonemes:
         self, pron_str: typing.Union[str, Pronunciation], keep_stress: bool = False
     ) -> typing.List[Phoneme]:
         """Split an IPA pronunciation into phonemes"""
-        if (not self._ipa_map_sorted) or (not self._phonemes_sorted):
+        if not self._ipa_map_regex:
             self.update()
 
         word_phonemes: typing.List[Phoneme] = []
+
+        if self.ipa_map:
+            if isinstance(pron_str, Pronunciation):
+                pron_str = "".join(p.text for p in pron_str)
+
+            def handle_replace(match):
+                text = match.group(1)
+                return self.ipa_map.get(text, text)
+
+            pron_str = self._ipa_map_regex.sub(handle_replace, pron_str)
 
         if isinstance(pron_str, Pronunciation):
             # Use supplied pronunication
@@ -606,58 +640,11 @@ class Phonemes:
 
         num_ipas: int = len(ipas)
 
-        # pylint: disable=C0200
-        has_mapped = False
-        for ipa_idx in range(len(ipas)):
-            ipa = ipas[ipa_idx]
-            if ipa is None:
-                # Skip replaced piece
-                continue
-
-            # Try to map current IPA
-            for src_ipas, dest_ipa in self._ipa_map_sorted:
-                if ipa_idx <= (num_ipas - len(src_ipas)):
-                    map_match = True
-                    # Look forward into sequence
-                    for src_idx in range(len(src_ipas)):
-                        if src_ipas[src_idx] != ipas[ipa_idx + src_idx]:
-                            map_match = False
-
-                    if map_match:
-                        has_mapped = True
-                        ipa = dest_ipa
-
-                        # Replace
-                        ipas[ipa_idx] = dest_ipa
-
-                        # Patch ipas to skip replaced pieces beyond first
-                        for src_idx in range(1, len(src_ipas)):
-                            ipas[ipa_idx + src_idx] = None
-                        break
-
         # ---------------------------------------------------------------------
 
-        if has_mapped:
-            # Need to re-split and combine
-            replaced_ipas = []
-            replaced_stress = defaultdict(str)
-
-            for ipa_idx, ipa in enumerate(ipas):
-                replaced_stress[len(replaced_ipas)] = ipa_stress[ipa_idx]
-
-                if ipa:
-                    replaced_ipas.extend(
-                        [p.text for p in Pronunciation.from_string(ipa)]
-                    )
-
-            num_ipas = len(replaced_ipas)
-        else:
-            replaced_ipas = ipas
-            replaced_stress = ipa_stress
-
-        # Second pass
-        for ipa_idx in range(len(replaced_ipas)):
-            ipa = replaced_ipas[ipa_idx]
+        # pylint: disable=consider-using-enumerate
+        for ipa_idx in range(len(ipas)):
+            ipa = ipas[ipa_idx]
             if ipa is None:
                 # Skip replaced piece
                 continue
@@ -674,10 +661,7 @@ class Phonemes:
                             phoneme_stress or ipa_stress[ipa_idx + phoneme_idx]
                         )
 
-                        if (
-                            phoneme_ipas[phoneme_idx]
-                            != replaced_ipas[ipa_idx + phoneme_idx]
-                        ):
+                        if phoneme_ipas[phoneme_idx] != ipas[ipa_idx + phoneme_idx]:
                             phoneme_match = False
                             break
 
@@ -694,7 +678,7 @@ class Phonemes:
 
                         # Patch ipas to skip replaced pieces
                         for phoneme_idx in range(1, len(phoneme_ipas)):
-                            replaced_ipas[ipa_idx + phoneme_idx] = None
+                            ipas[ipa_idx + phoneme_idx] = None
 
                         break
 
