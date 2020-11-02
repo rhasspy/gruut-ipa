@@ -18,6 +18,11 @@ Supported Languages:
 * U.S. English (`en-us`)
 * Dutch (`nl`)
 * Czech (`cs-cz`)
+* Italian (`it-it`)
+* German (`de-de`)
+* French (`fr-fr`)
+* Spanish (`es-es`)
+* Russian (`ru-ru`)
     
 ## Installing
 
