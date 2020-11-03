@@ -278,7 +278,9 @@ class Pronunciation:
         return self.phones_and_others[idx]
 
     @staticmethod
-    def from_string(pron_str: str, keep_stress: bool = True) -> "Pronunciation":
+    def from_string(
+        pron_str: str, keep_stress: bool = True, drop_tones: bool = False
+    ) -> "Pronunciation":
         """Split an IPA pronunciation into phones.
 
         Stress markers bind to the next non-combining codepoint (e.g., ˈa).
@@ -326,7 +328,9 @@ class Pronunciation:
                 skip_next_cluster = True
             elif IPA.is_tone(codepoint):
                 # Add to end of current cluster
-                tone += codepoint
+                if not drop_tones:
+                    tone += codepoint
+
                 continue
             elif unicodedata.combining(codepoint) == 0:
                 # Non-combining character
@@ -367,6 +371,7 @@ class Phoneme:
 
     def __init__(self, text: str, example: str = "", unknown: bool = False):
         self._text = ""
+        self._text_compare = ""
         self.example = example
         self.unknown = unknown
 
@@ -462,6 +467,31 @@ class Phoneme:
         self._text = unicodedata.normalize("NFC", self._text)
 
         return self._text
+
+    @property
+    def text_compare(self) -> str:
+        """Return letters and elongation with no stress/tones (NFC normalized)"""
+        if self._text_compare:
+            return self._text_compare
+
+        self._text_compare = self.letters
+
+        if self.nasalated:
+            self._text_compare += IPA.NASAL
+
+        if self.raised:
+            self._text_compare += IPA.RAISED
+
+        for c in self._extra_combining:
+            self._text_compare += c
+
+        if self.elongated:
+            self._text_compare += IPA.LONG
+
+        # Re-normalize and combine
+        self._text_compare = unicodedata.normalize("NFC", self._text_compare)
+
+        return self._text_compare
 
     def copy(self) -> "Phoneme":
         """Create a copy of this phonemes"""
@@ -631,7 +661,10 @@ class Phonemes:
         )
 
     def split(
-        self, pron_str: typing.Union[str, Pronunciation], keep_stress: bool = False
+        self,
+        pron_str: typing.Union[str, Pronunciation],
+        keep_stress: bool = False,
+        drop_tones: bool = False,
     ) -> typing.List[Phoneme]:
         """Split an IPA pronunciation into phonemes"""
         if not self._ipa_map_regex:
@@ -654,17 +687,30 @@ class Phonemes:
             pron = pron_str
         else:
             # Split string into pronunciation
-            pron = Pronunciation.from_string(pron_str, keep_stress=keep_stress)
+            pron = Pronunciation.from_string(
+                pron_str, keep_stress=keep_stress, drop_tones=drop_tones
+            )
 
         # Get text for IPA phones
         ipas = [pb.text for pb in pron]
-        ipa_stress = defaultdict(str)
-        if keep_stress:
-            # Strip stress
-            for ipa_idx, ipa in enumerate(ipas):
-                if ipa and IPA.is_stress(ipa[0]):
-                    ipas[ipa_idx] = ipa[1:]
-                    ipa_stress[ipa_idx] = ipa[0]
+
+        # Keep stress and tones separate to make phoneme comparisons easier
+        ipa_stress: typing.Dict[int, str] = defaultdict(str)
+        ipa_tones: typing.Dict[int, str] = defaultdict(str)
+        for ipa_idx, ipa in enumerate(ipas):
+            if ipa:
+                keep_ipa = ""
+                for codepoint in ipa:
+                    if IPA.is_stress(codepoint):
+                        if keep_stress:
+                            ipa_stress[ipa_idx] += codepoint
+                    elif IPA.is_tone(codepoint):
+                        if not drop_tones:
+                            ipa_tones[ipa_idx] += codepoint
+                    else:
+                        keep_ipa += codepoint
+
+                ipas[ipa_idx] = keep_ipa
 
         num_ipas: int = len(ipas)
 
@@ -682,12 +728,12 @@ class Phonemes:
                 if ipa_idx <= (num_ipas - len(phoneme_ipas)):
                     phoneme_match = True
                     phoneme_stress = ""
+                    phoneme_tones = ""
 
                     # Look forward into sequence
                     for phoneme_idx in range(len(phoneme_ipas)):
-                        phoneme_stress = (
-                            phoneme_stress or ipa_stress[ipa_idx + phoneme_idx]
-                        )
+                        phoneme_stress += ipa_stress[ipa_idx + phoneme_idx]
+                        phoneme_tones += ipa_tones[ipa_idx + phoneme_idx]
 
                         if phoneme_ipas[phoneme_idx] != ipas[ipa_idx + phoneme_idx]:
                             phoneme_match = False
@@ -695,10 +741,10 @@ class Phonemes:
 
                     if phoneme_match:
                         # Successful match
-                        if keep_stress and phoneme_stress:
-                            # Create a copy of the phoneme with applied stress
+                        if phoneme_stress or phoneme_tones:
+                            # Create a copy of the phoneme with applied stress/tones
                             phoneme = Phoneme(
-                                text=(phoneme_stress + phoneme.text),
+                                text=(phoneme_stress + phoneme.text + phoneme_tones),
                                 example=phoneme.example,
                             )
 

@@ -190,7 +190,9 @@ def do_phonemes(args):
     for line in pronunciations:
         line = line.strip()
         if line:
-            line_phonemes = phonemes.split(line, keep_stress=args.keep_stress)
+            line_phonemes = phonemes.split(
+                line, keep_stress=args.keep_stress, drop_tones=args.drop_tones
+            )
             phonemes_str = args.separator.join(p.text for p in line_phonemes if p.text)
             print(phonemes_str)
             sys.stdout.flush()
@@ -310,6 +312,9 @@ def get_args() -> argparse.Namespace:
         "--keep-stress",
         action="store_true",
         help="Keep primary/secondary stress markers",
+    )
+    phonemes_parser.add_argument(
+        "--drop-tones", action="store_true", help="Remove tone numbers/letters"
     )
     phonemes_parser.add_argument(
         "--phonemes-file", help="Load phonemes from file instead of using language code"
