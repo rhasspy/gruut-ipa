@@ -35,7 +35,7 @@ _DATA_DIR = _DIR / "data"
 
 
 class Phone:
-    """Single IPA phone with discritics and suprasegmentals"""
+    """Single IPA phone with diacritics and suprasegmentals"""
 
     def __init__(
         self,
@@ -46,12 +46,14 @@ class Phone:
         is_raised: bool = False,
         diacritics: typing.Optional[typing.Set[str]] = None,
         suprasegmentals: typing.Optional[typing.Set[str]] = None,
+        tone: str = "",
     ):
         self.letters: str = unicodedata.normalize("NFC", letters)
         self.stress: Stress = stress
         self.is_long: bool = is_long
         self.is_nasal: bool = is_nasal
         self.is_raised: bool = is_raised
+        self.tone: str = tone
 
         self.diacritics: typing.Set[str] = diacritics or set()
         self.suprasegmentals: typing.Set[str] = suprasegmentals or set()
@@ -96,6 +98,10 @@ class Phone:
         for diacritic in self.diacritics:
             self._text += diacritic
 
+        # Tone
+        if self.tone:
+            self._text += self.tone
+
         # Post-letter suprasegmentals
         if self.is_long:
             self._text += IPA.LONG
@@ -128,7 +134,11 @@ class Phone:
         """Parse phone from string"""
         # Decompose into base and combining characters
         codepoints = unicodedata.normalize("NFD", phone_str)
-        kwargs: typing.Dict[str, typing.Any] = {"letters": "", "diacritics": set()}
+        kwargs: typing.Dict[str, typing.Any] = {
+            "letters": "",
+            "diacritics": set(),
+            "tone": "",
+        }
 
         for c in codepoints:
             # Check for stress
@@ -151,6 +161,9 @@ class Phone:
             elif IPA.is_tie(c):
                 # Keep ties in letters
                 kwargs["letters"] += c
+            elif IPA.is_tone(c):
+                # Tone numbers/letters
+                kwargs["tone"] += c
             elif unicodedata.combining(c) > 0:
                 # Stow some diacritics that we don't do anything with
                 kwargs["diacritics"].add(c)
@@ -278,6 +291,7 @@ class Pronunciation:
         """
         clusters = []
         cluster = ""
+        tone = ""
         skip_next_cluster = False
 
         codepoints = unicodedata.normalize("NFD", pron_str)
@@ -308,8 +322,12 @@ class Pronunciation:
                 # Add to current cluster
                 pass
             elif IPA.is_tie(codepoint):
-                # Add to next non-combining to current cluster
+                # Add next non-combining to current cluster
                 skip_next_cluster = True
+            elif IPA.is_tone(codepoint):
+                # Add to end of current cluster
+                tone += codepoint
+                continue
             elif unicodedata.combining(codepoint) == 0:
                 # Non-combining character
                 if skip_next_cluster:
@@ -320,8 +338,9 @@ class Pronunciation:
                     new_cluster = True
 
             if new_cluster and cluster:
-                clusters.append(cluster)
+                clusters.append(cluster + tone)
                 cluster = ""
+                tone = ""
 
             cluster += codepoint
 
@@ -360,6 +379,7 @@ class Phoneme:
         # Decompose into base and combining characters
         codepoints = unicodedata.normalize("NFD", text)
         self.letters = ""
+        self.tone = ""
 
         for c in codepoints:
             # Check for stress
@@ -379,6 +399,9 @@ class Phoneme:
             elif IPA.is_bracket(c) or IPA.is_break(c):
                 # Skip brackets/syllable breaks
                 pass
+            elif IPA.is_tone(c):
+                # Keep tone separate
+                self.tone += c
             elif c in {IPA.SYLLABIC, IPA.NON_SYLLABIC, IPA.EXTRA_SHORT}:
                 # Stow some diacritics that we don't do anything with
                 self._extra_combining.append(c)
@@ -429,6 +452,9 @@ class Phoneme:
         for c in self._extra_combining:
             self._text += c
 
+        if self.tone:
+            self._text += self.tone
+
         if self.elongated:
             self._text += IPA.LONG
 
@@ -451,6 +477,7 @@ class Phoneme:
         props: typing.Dict[str, typing.Any] = {
             "text": repr(self),
             "letters": self.letters,
+            "tone": self.tone,
         }
 
         if self.unknown:
@@ -590,7 +617,8 @@ class Phonemes:
             else:
                 cases.append(re.escape(match_text))
 
-        self._ipa_map_regex = re.compile("({})".format("|".join(cases)))
+        ipa_map_regex_str = "({})".format("|".join(cases))
+        self._ipa_map_regex = re.compile(ipa_map_regex_str)
 
         # Split phonemes and sort by reverse length
         split_phonemes = [

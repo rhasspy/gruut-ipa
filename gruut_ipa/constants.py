@@ -30,6 +30,16 @@ class IPA(str, Enum):
     INTONATION_RISING = "\u2197"  # ↗
     INTONATION_FALLING = "\u2198"  # ↘
 
+    TONE_1 = "¹"
+    TONE_2 = "²"
+    TONE_3 = "³"
+    TONE_4 = "⁴"
+    TONE_5 = "⁵"
+    TONE_6 = "⁶"
+    TONE_7 = "⁷"
+    TONE_8 = "⁸"
+    TONE_9 = "⁹"
+
     BRACKET_PHONETIC_LEFT = "["
     BRACKET_PHONETIC_RIGHT = "]"
     BRACKET_PHONEMIC_LEFT = "/"
@@ -92,6 +102,21 @@ class IPA(str, Enum):
     def is_intonation(codepoint: str) -> bool:
         """True if a rising or falling IPA intonation symbol"""
         return codepoint in {IPA.INTONATION_RISING, IPA.INTONATION_FALLING}
+
+    @staticmethod
+    def is_tone(codepoint: str) -> bool:
+        """True if any IPA tone symbol"""
+        return codepoint in {
+            IPA.TONE_1,
+            IPA.TONE_2,
+            IPA.TONE_3,
+            IPA.TONE_4,
+            IPA.TONE_5,
+            IPA.TONE_6,
+            IPA.TONE_7,
+            IPA.TONE_8,
+            IPA.TONE_9,
+        }
 
     @staticmethod
     def graphemes(codepoints: str) -> typing.List[str]:

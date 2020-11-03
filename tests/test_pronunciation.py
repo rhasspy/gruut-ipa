@@ -51,6 +51,14 @@ class PronunciationTestCase(unittest.TestCase):
 
         self.assertEqual(pron.text, pron_str)
 
+    def test_tones(self):
+        """Test Pronuncation.from_string with tone numbers"""
+        pron_str = "/²ˈb¹lˈɔkːhʉːs/"
+        pron = Pronunciation.from_string(pron_str)
+
+        phone_strs = [p.text for p in pron]
+        self.assertEqual(phone_strs, ["ˈb²¹", "l", "ˈɔ", "kː", "h", "ʉː", "s"])
+
 
 # -----------------------------------------------------------------------------
 
