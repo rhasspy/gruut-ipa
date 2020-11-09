@@ -140,12 +140,17 @@ class Phone:
             "tone": "",
         }
 
+        in_tone = False
+
         for c in codepoints:
             # Check for stress
             if c == IPA.STRESS_PRIMARY:
                 kwargs["stress"] = Stress.PRIMARY
             elif c == IPA.STRESS_SECONDARY:
                 kwargs["stress"] = Stress.SECONDARY
+            elif in_tone and (c in {IPA.TONE_GLOTTALIZED, IPA.TONE_SHORT}):
+                # Interpret as part of tone
+                kwargs["tone"] += c
             elif IPA.is_long(c):
                 # Check for elongation
                 kwargs["is_long"] = True
@@ -164,6 +169,7 @@ class Phone:
             elif IPA.is_tone(c):
                 # Tone numbers/letters
                 kwargs["tone"] += c
+                in_tone = True
             elif unicodedata.combining(c) > 0:
                 # Stow some diacritics that we don't do anything with
                 kwargs["diacritics"].add(c)
@@ -294,6 +300,7 @@ class Pronunciation:
         clusters = []
         cluster = ""
         tone = ""
+        in_tone = False
         skip_next_cluster = False
 
         codepoints = unicodedata.normalize("NFD", pron_str)
@@ -320,6 +327,12 @@ class Pronunciation:
                 else:
                     # Drop stress
                     continue
+            elif in_tone and (codepoint in {IPA.TONE_GLOTTALIZED, IPA.TONE_SHORT}):
+                # Interpret as part of tone
+                if not drop_tones:
+                    tone += codepoint
+
+                continue
             elif IPA.is_long(codepoint):
                 # Add to current cluster
                 pass
@@ -331,6 +344,7 @@ class Pronunciation:
                 if not drop_tones:
                     tone += codepoint
 
+                in_tone = True
                 continue
             elif unicodedata.combining(codepoint) == 0:
                 # Non-combining character
@@ -349,7 +363,7 @@ class Pronunciation:
             cluster += codepoint
 
         if cluster:
-            clusters.append(cluster)
+            clusters.append(cluster + tone)
 
         phones_and_others: typing.List[typing.Union[Phone, Break, Intonation]] = []
         for cluster in clusters:
@@ -385,6 +399,7 @@ class Phoneme:
         codepoints = unicodedata.normalize("NFD", text)
         self.letters = ""
         self.tone = ""
+        in_tone = False
 
         for c in codepoints:
             # Check for stress
@@ -392,6 +407,9 @@ class Phoneme:
                 self.stress = Stress.PRIMARY
             elif c == IPA.STRESS_SECONDARY:
                 self.stress = Stress.SECONDARY
+            elif in_tone and (c in {IPA.TONE_GLOTTALIZED, IPA.TONE_SHORT}):
+                # Interpret as part of tone
+                self.tone += c
             elif IPA.is_long(c):
                 # Check for elongation
                 self.elongated = True
@@ -407,6 +425,7 @@ class Phoneme:
             elif IPA.is_tone(c):
                 # Keep tone separate
                 self.tone += c
+                in_tone = True
             elif c in {IPA.SYLLABIC, IPA.NON_SYLLABIC, IPA.EXTRA_SHORT}:
                 # Stow some diacritics that we don't do anything with
                 self._extra_combining.append(c)
@@ -697,6 +716,7 @@ class Phonemes:
         # Keep stress and tones separate to make phoneme comparisons easier
         ipa_stress: typing.Dict[int, str] = defaultdict(str)
         ipa_tones: typing.Dict[int, str] = defaultdict(str)
+        in_tone = False
         for ipa_idx, ipa in enumerate(ipas):
             if ipa:
                 keep_ipa = ""
@@ -704,9 +724,17 @@ class Phonemes:
                     if IPA.is_stress(codepoint):
                         if keep_stress:
                             ipa_stress[ipa_idx] += codepoint
+                    elif in_tone and (
+                        codepoint in {IPA.TONE_GLOTTALIZED, IPA.TONE_SHORT}
+                    ):
+                        # Interpret as part of time
+                        if not drop_tones:
+                            ipa_tones[ipa_idx] += codepoint
                     elif IPA.is_tone(codepoint):
                         if not drop_tones:
                             ipa_tones[ipa_idx] += codepoint
+
+                        in_tone = True
                     else:
                         keep_ipa += codepoint
 

@@ -40,6 +40,15 @@ class IPA(str, Enum):
     TONE_8 = "⁸"
     TONE_9 = "⁹"
 
+    TONE_EXTRA_HIGH = "˥"
+    TONE_HIGH = "˦"
+    TONE_MID = "˧"
+    TONE_LOW = "˨"
+    TONE_EXTRA_LOW = "˩"
+
+    TONE_GLOTTALIZED = "ˀ"
+    TONE_SHORT = "ʔ"
+
     BRACKET_PHONETIC_LEFT = "["
     BRACKET_PHONETIC_RIGHT = "]"
     BRACKET_PHONEMIC_LEFT = "/"
@@ -116,6 +125,11 @@ class IPA(str, Enum):
             IPA.TONE_7,
             IPA.TONE_8,
             IPA.TONE_9,
+            IPA.TONE_EXTRA_HIGH,
+            IPA.TONE_HIGH,
+            IPA.TONE_MID,
+            IPA.TONE_LOW,
+            IPA.TONE_EXTRA_LOW,
         }
 
     @staticmethod
