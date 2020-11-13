@@ -157,6 +157,11 @@ class IPA(str, Enum):
 
         return graphemes
 
+    @staticmethod
+    def without_stress(codepoints: str) -> str:
+        """Return string without primary/secondary stress"""
+        return "".join(c for c in codepoints if not IPA.is_stress(c))
+
 
 class Stress(str, Enum):
     """Applied stress"""
