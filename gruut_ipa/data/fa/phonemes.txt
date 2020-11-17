@@ -1,0 +1,41 @@
+# https://en.wikipedia.org/wiki/Persian_phonology
+
+# Vowels
+æ نه
+ɒː تا
+e̞ که e
+iː شیر í î
+o تو
+uː زود ʊ
+eː شیر
+oː زور
+
+# Dipthongs
+ej کی
+ow نو
+
+# Consonants
+b برادر
+p پدر
+t تا
+d دوست
+t͡ʃ چوب tʃ
+d͡ʒ جوان dʒ
+k کشور
+ɡ گروه
+ʔ معنا
+f فشار
+v ویژه
+s سایه ŝ
+z آزاد
+ʃ شاه
+ʒ ژاله
+x خانه χ
+ɢ قلم ɣ q
+h هفت
+m مادر
+n نان
+l لب
+ɾ ایران r ʁ
+j یا
+w استخوان
