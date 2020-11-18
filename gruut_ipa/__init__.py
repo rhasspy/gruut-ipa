@@ -44,9 +44,9 @@ class Phone:
         stress: Stress = Stress.NONE,
         accents: typing.Optional[typing.Iterable[Accent]] = None,
         is_long: bool = False,
-        is_nasal: bool = False,
-        is_raised: bool = False,
-        diacritics: typing.Optional[typing.Set[str]] = None,
+        nasal: typing.Optional[typing.Set[int]] = None,
+        raised: typing.Optional[typing.Set[int]] = None,
+        diacritics: typing.Optional[typing.Dict[int, typing.Set[str]]] = None,
         suprasegmentals: typing.Optional[typing.Set[str]] = None,
         tone: str = "",
     ):
@@ -54,11 +54,18 @@ class Phone:
         self.stress: Stress = stress
         self.accents: typing.List[Accent] = list(accents or [])
         self.is_long: bool = is_long
-        self.is_nasal: bool = is_nasal
-        self.is_raised: bool = is_raised
+
+        self.nasal: typing.Set[int] = nasal or set()
+        self.is_nasal = bool(self.nasal)
+
+        self.raised: typing.Set[int] = raised or set()
+        self.is_raised = bool(self.raised)
+
         self.tone: str = tone
 
-        self.diacritics: typing.Set[str] = diacritics or set()
+        self.diacritics: typing.Dict[int, typing.Set[str]] = diacritics or defaultdict(
+            set
+        )
         self.suprasegmentals: typing.Set[str] = suprasegmentals or set()
 
         # Decompose suprasegmentals and diacritics
@@ -76,11 +83,23 @@ class Phone:
         if self.is_long:
             self.suprasegmentals.add(IPA.LONG)
 
-        if self.is_nasal:
-            self.diacritics.add(IPA.NASAL)
+        # Nasal
+        for letter_index in self.nasal:
+            letter_diacritics = self.diacritics.get(letter_index)
+            if letter_diacritics is None:
+                letter_diacritics = set()
+                self.diacritics[letter_index] = letter_diacritics
 
-        if self.is_raised:
-            self.diacritics.add(IPA.RAISED)
+            letter_diacritics.add(IPA.NASAL)
+
+        # Raised
+        for letter_index in self.raised:
+            letter_diacritics = self.diacritics.get(letter_index)
+            if letter_diacritics is None:
+                letter_diacritics = set()
+                self.diacritics[letter_index] = letter_diacritics
+
+            letter_diacritics.add(IPA.RAISED)
 
         self._text: str = ""
 
@@ -106,12 +125,13 @@ class Phone:
         elif self.stress == Stress.SECONDARY:
             self._text += IPA.STRESS_SECONDARY
 
-        # Letters
-        self._text += self.letters
+        # Letters and diacritics
+        for letter_index, letter in enumerate(self.letters):
+            self._text += letter
 
-        # Diacritics
-        for diacritic in self.diacritics:
-            self._text += diacritic
+            # Diacritics
+            for diacritic in self.diacritics.get(letter_index, []):
+                self._text += diacritic
 
         # Tone
         if self.tone:
@@ -151,12 +171,16 @@ class Phone:
         codepoints = unicodedata.normalize("NFD", phone_str)
         kwargs: typing.Dict[str, typing.Any] = {
             "letters": "",
-            "diacritics": set(),
+            "diacritics": defaultdict(set),
             "tone": "",
             "accents": [],
+            "nasal": set(),
+            "raised": set(),
         }
 
         in_tone = False
+        new_letter = False
+        letter_index = 0
 
         for c in codepoints:
             # Check for stress
@@ -176,26 +200,31 @@ class Phone:
                 kwargs["is_long"] = True
             elif IPA.is_nasal(c):
                 # Check for nasalation
-                kwargs["is_nasal"] = True
+                kwargs["nasal"].add(letter_index)
             elif IPA.is_raised(c):
                 # Check for raised articulation
-                kwargs["is_raised"] = True
+                kwargs["raised"].add(letter_index)
             elif IPA.is_bracket(c) or IPA.is_break(c):
                 # Skip brackets/syllable breaks
                 pass
             elif IPA.is_tie(c):
                 # Keep ties in letters
                 kwargs["letters"] += c
+                letter_index += 1
             elif IPA.is_tone(c):
                 # Tone numbers/letters
                 kwargs["tone"] += c
                 in_tone = True
             elif unicodedata.combining(c) > 0:
                 # Stow some diacritics that we don't do anything with
-                kwargs["diacritics"].add(c)
+                kwargs["diacritics"][letter_index].add(c)
             else:
                 # Include all other characters in letters
                 kwargs["letters"] += c
+                if new_letter:
+                    letter_index += 1
+
+                new_letter = True
 
         return Phone(**kwargs)
 
@@ -436,15 +465,17 @@ class Phoneme:
         self.stress: Stress = Stress.NONE
         self.accents: typing.List[Accent] = []
         self.elongated: bool = False
-        self.nasalated: bool = False
-        self.raised: bool = False
-        self._extra_combining: typing.List[str] = []
+        self.nasalated: typing.Set[int] = set()
+        self.raised: typing.Set[int] = set()
+        self._extra_combining: typing.Dict[int, typing.List[str]] = defaultdict(list)
 
         # Decompose into base and combining characters
         codepoints = unicodedata.normalize("NFD", text)
         self.letters = ""
         self.tone = ""
         in_tone = False
+        letter_index = 0
+        new_letter = False
 
         for c in codepoints:
             # Check for stress
@@ -464,10 +495,10 @@ class Phoneme:
                 self.elongated = True
             elif IPA.is_nasal(c):
                 # Check for nasalation
-                self.nasalated = True
+                self.nasalated.add(letter_index)
             elif IPA.is_raised(c):
                 # Check for raised articulation
-                self.raised = True
+                self.raised.add(letter_index)
             elif IPA.is_bracket(c) or IPA.is_break(c):
                 # Skip brackets/syllable breaks
                 pass
@@ -477,10 +508,15 @@ class Phoneme:
                 in_tone = True
             elif c in {IPA.SYLLABIC, IPA.NON_SYLLABIC, IPA.EXTRA_SHORT}:
                 # Stow some diacritics that we don't do anything with
-                self._extra_combining.append(c)
+                self._extra_combining[letter_index].append(c)
             else:
                 # Include all other characters in base
                 self.letters += c
+
+                if new_letter:
+                    letter_index += 1
+
+                new_letter = True
 
         # Re-normalize and combine letters
         self.letters = unicodedata.normalize("NFC", self.letters)
@@ -521,16 +557,17 @@ class Phoneme:
         elif self.stress == Stress.SECONDARY:
             self._text += IPA.STRESS_SECONDARY
 
-        self._text += self.letters
+        for letter_index, letter in enumerate(self.letters):
+            self._text += letter
 
-        if self.nasalated:
-            self._text += IPA.NASAL
+            if letter_index in self.nasalated:
+                self._text += IPA.NASAL
 
-        if self.raised:
-            self._text += IPA.RAISED
+            if letter_index in self.raised:
+                self._text += IPA.RAISED
 
-        for c in self._extra_combining:
-            self._text += c
+            for c in self._extra_combining[letter_index]:
+                self._text += c
 
         if self.tone:
             self._text += self.tone
@@ -549,16 +586,17 @@ class Phoneme:
         if self._text_compare:
             return self._text_compare
 
-        self._text_compare = self.letters
+        for letter_index, letter in enumerate(self.letters):
+            self._text_compare += letter
 
-        if self.nasalated:
-            self._text_compare += IPA.NASAL
+            if letter_index in self.nasalated:
+                self._text_compare += IPA.NASAL
 
-        if self.raised:
-            self._text_compare += IPA.RAISED
+            if letter_index in self.raised:
+                self._text_compare += IPA.RAISED
 
-        for c in self._extra_combining:
-            self._text_compare += c
+            for c in self._extra_combining[letter_index]:
+                self._text_compare += c
 
         if self.elongated:
             self._text_compare += IPA.LONG

@@ -22,14 +22,14 @@ class PhoneTestCase(unittest.TestCase):
         self.assertEqual(phone.text, unicodedata.normalize("NFC", "ˈãː"))
 
         self.assertEqual(phone.letters, "a")
-        self.assertEqual(phone.diacritics, {IPA.NASAL})
+        self.assertEqual(phone.diacritics[0], {IPA.NASAL})
         self.assertEqual(phone.suprasegmentals, {IPA.STRESS_PRIMARY, IPA.LONG})
 
         self.assertEqual(phone.stress, Stress.PRIMARY)
-        self.assertEqual(phone.is_nasal, True)
-        self.assertEqual(phone.is_long, True)
+        self.assertTrue(phone.is_nasal)
+        self.assertTrue(phone.is_long)
 
-        self.assertEqual(phone.is_vowel, True)
+        self.assertTrue(phone.is_vowel)
         self.assertEqual(phone.vowel.height, VowelHeight.OPEN)
         self.assertEqual(phone.vowel.placement, VowelPlacement.FRONT)
 

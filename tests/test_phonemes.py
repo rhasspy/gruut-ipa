@@ -20,6 +20,18 @@ class PhonemesTestCase(unittest.TestCase):
         phoneme_strs = [p.text for p in pron_phonemes]
         self.assertEqual(phoneme_strs, ["d͡ʒ", "ʌ", "s", "t", "ə", "k", "ˈaʊ"])
 
+    def test_dipthong(self):
+        """Test Phonemes.from_string with a dipthong"""
+        # ampliam
+        pron_str = "/ɐ̃pliɐ̃w̃/"
+
+        lang_phonemes = Phonemes.from_language("pt")
+        pron_phonemes = lang_phonemes.split(pron_str)
+
+        # Ensure "ɐ̃" and "ɐ̃w̃" are kept
+        phoneme_strs = [p.text for p in pron_phonemes]
+        self.assertEqual(phoneme_strs, ["ɐ̃", "p", "l", "i", "ɐ̃w̃"])
+
 
 # -----------------------------------------------------------------------------
 
