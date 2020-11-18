@@ -11,6 +11,7 @@ from .constants import (  # noqa: F401
     IPA,
     SCHWAS,
     VOWELS,
+    Accent,
     BreakType,
     Consonant,
     Dipthong,
@@ -41,6 +42,7 @@ class Phone:
         self,
         letters: str,
         stress: Stress = Stress.NONE,
+        accents: typing.Optional[typing.Iterable[Accent]] = None,
         is_long: bool = False,
         is_nasal: bool = False,
         is_raised: bool = False,
@@ -50,6 +52,7 @@ class Phone:
     ):
         self.letters: str = unicodedata.normalize("NFC", letters)
         self.stress: Stress = stress
+        self.accents: typing.List[Accent] = list(accents or [])
         self.is_long: bool = is_long
         self.is_nasal: bool = is_nasal
         self.is_raised: bool = is_raised
@@ -63,6 +66,12 @@ class Phone:
             self.suprasegmentals.add(IPA.STRESS_PRIMARY)
         elif self.stress == Stress.SECONDARY:
             self.suprasegmentals.add(IPA.STRESS_SECONDARY)
+
+        if Accent.ACUTE in self.accents:
+            self.suprasegmentals.add(IPA.ACCENT_ACUTE)
+
+        if Accent.GRAVE in self.accents:
+            self.suprasegmentals.add(IPA.ACCENT_GRAVE)
 
         if self.is_long:
             self.suprasegmentals.add(IPA.LONG)
@@ -86,6 +95,12 @@ class Phone:
             return self._text
 
         # Pre-letter suprasegmentals
+        for accent in self.accents:
+            if accent == Accent.ACUTE:
+                self._text += IPA.ACCENT_ACUTE
+            elif accent == Accent.GRAVE:
+                self._text += IPA.ACCENT_GRAVE
+
         if self.stress == Stress.PRIMARY:
             self._text += IPA.STRESS_PRIMARY
         elif self.stress == Stress.SECONDARY:
@@ -138,13 +153,18 @@ class Phone:
             "letters": "",
             "diacritics": set(),
             "tone": "",
+            "accents": [],
         }
 
         in_tone = False
 
         for c in codepoints:
             # Check for stress
-            if c == IPA.STRESS_PRIMARY:
+            if (c == IPA.ACCENT_ACUTE) and not in_tone:
+                kwargs["accents"].append(Accent.ACUTE)
+            elif (c == IPA.ACCENT_GRAVE) and not in_tone:
+                kwargs["accents"].append(Accent.GRAVE)
+            elif c == IPA.STRESS_PRIMARY:
                 kwargs["stress"] = Stress.PRIMARY
             elif c == IPA.STRESS_SECONDARY:
                 kwargs["stress"] = Stress.SECONDARY
@@ -285,11 +305,14 @@ class Pronunciation:
 
     @staticmethod
     def from_string(
-        pron_str: str, keep_stress: bool = True, drop_tones: bool = False
+        pron_str: str,
+        keep_stress: bool = True,
+        keep_accents: typing.Optional[bool] = None,
+        drop_tones: bool = False,
     ) -> "Pronunciation":
         """Split an IPA pronunciation into phones.
 
-        Stress markers bind to the next non-combining codepoint (e.g., ˈa).
+        Stress/accent markers bind to the next non-combining codepoint (e.g., ˈa).
         Elongation markers bind to the previous non-combining codepoint (e.g., aː).
         Ties join two non-combining sequences (e.g. t͡ʃ).
 
@@ -297,8 +320,15 @@ class Pronunciation:
 
         Returns list of phones.
         """
+        if keep_accents is None:
+            keep_accents = keep_stress
+
         clusters = []
         cluster = ""
+        stress = ""
+        is_stress = False
+        accents = ""
+        is_accent = False
         tone = ""
         in_tone = False
         skip_next_cluster = False
@@ -307,6 +337,8 @@ class Pronunciation:
 
         for codepoint in codepoints:
             new_cluster = False
+            is_stress = False
+            is_accent = False
 
             if (
                 codepoint.isspace()
@@ -320,13 +352,16 @@ class Pronunciation:
                 # Keep minor/major/word breaks and intonation markers
                 new_cluster = True
 
-            if IPA.is_stress(codepoint):
-                if keep_stress:
+            if IPA.is_accent(codepoint) and not in_tone:
+                is_accent = True
+                if cluster:
                     new_cluster = True
                     skip_next_cluster = True
-                else:
-                    # Drop stress
-                    continue
+            elif IPA.is_stress(codepoint):
+                is_stress = True
+                if cluster:
+                    new_cluster = True
+                    skip_next_cluster = True
             elif in_tone and (codepoint in {IPA.TONE_GLOTTALIZED, IPA.TONE_SHORT}):
                 # Interpret as part of tone
                 if not drop_tones:
@@ -351,19 +386,28 @@ class Pronunciation:
                 if skip_next_cluster:
                     # Add to current cluster
                     skip_next_cluster = False
-                else:
+                elif cluster:
                     # Start a new cluster
                     new_cluster = True
 
             if new_cluster and cluster:
-                clusters.append(cluster + tone)
+                clusters.append(accents + stress + cluster + tone)
+                accents = ""
+                stress = ""
                 cluster = ""
                 tone = ""
 
-            cluster += codepoint
+            if is_accent:
+                if keep_accents:
+                    accents += codepoint
+            elif is_stress:
+                if keep_stress:
+                    stress += codepoint
+            else:
+                cluster += codepoint
 
         if cluster:
-            clusters.append(cluster + tone)
+            clusters.append(accents + stress + cluster + tone)
 
         phones_and_others: typing.List[typing.Union[Phone, Break, Intonation]] = []
         for cluster in clusters:
@@ -390,6 +434,7 @@ class Phoneme:
         self.unknown = unknown
 
         self.stress: Stress = Stress.NONE
+        self.accents: typing.List[Accent] = []
         self.elongated: bool = False
         self.nasalated: bool = False
         self.raised: bool = False
@@ -403,7 +448,11 @@ class Phoneme:
 
         for c in codepoints:
             # Check for stress
-            if c == IPA.STRESS_PRIMARY:
+            if (c == IPA.ACCENT_ACUTE) and (not in_tone):
+                self.accents.append(Accent.ACUTE)
+            elif (c == IPA.ACCENT_GRAVE) and (not in_tone):
+                self.accents.append(Accent.GRAVE)
+            elif c == IPA.STRESS_PRIMARY:
                 self.stress = Stress.PRIMARY
             elif c == IPA.STRESS_SECONDARY:
                 self.stress = Stress.SECONDARY
@@ -461,11 +510,18 @@ class Phoneme:
         if self._text:
             return self._text
 
-        self._text = self.letters
+        for accent in self.accents:
+            if accent == Accent.ACUTE:
+                self._text += IPA.ACCENT_ACUTE
+            elif accent == Accent.GRAVE:
+                self._text += IPA.ACCENT_GRAVE
+
         if self.stress == Stress.PRIMARY:
-            self._text = IPA.STRESS_PRIMARY + self._text
+            self._text += IPA.STRESS_PRIMARY
         elif self.stress == Stress.SECONDARY:
-            self._text = IPA.STRESS_SECONDARY + self._text
+            self._text += IPA.STRESS_SECONDARY
+
+        self._text += self.letters
 
         if self.nasalated:
             self._text += IPA.NASAL
@@ -535,6 +591,7 @@ class Phoneme:
         if self.example:
             props["example"] = self.example
 
+        props["accents"] = [a.value for a in self.accents]
         props["stress"] = self.stress.value
 
         if self.vowel:
@@ -683,11 +740,15 @@ class Phonemes:
         self,
         pron_str: typing.Union[str, Pronunciation],
         keep_stress: bool = False,
+        keep_accents: typing.Optional[bool] = None,
         drop_tones: bool = False,
     ) -> typing.List[Phoneme]:
         """Split an IPA pronunciation into phonemes"""
         if not self._ipa_map_regex:
             self.update()
+
+        if keep_accents is None:
+            keep_accents = keep_stress
 
         word_phonemes: typing.List[Phoneme] = []
 
@@ -721,7 +782,10 @@ class Phonemes:
             if ipa:
                 keep_ipa = ""
                 for codepoint in ipa:
-                    if IPA.is_stress(codepoint):
+                    if IPA.is_accent(codepoint) and (not in_tone):
+                        if keep_accents:
+                            ipa_stress[ipa_idx] += codepoint
+                    elif IPA.is_stress(codepoint):
                         if keep_stress:
                             ipa_stress[ipa_idx] += codepoint
                     elif in_tone and (

@@ -11,6 +11,9 @@ class IPA(str, Enum):
     STRESS_PRIMARY = "\u02C8"  # ˈ
     STRESS_SECONDARY = "\u02CC"  # ˌ
 
+    ACCENT_ACUTE = "'"
+    ACCENT_GRAVE = "²"
+
     LONG = "\u02D0"  # ː
     HALF_LONG = "\u02D1"  # eˑ
     EXTRA_SHORT = "\u0306"  # ə̆
@@ -77,6 +80,11 @@ class IPA(str, Enum):
     def is_stress(codepoint: str) -> bool:
         """True if primary/secondary stress symbol"""
         return codepoint in (IPA.STRESS_PRIMARY, IPA.STRESS_SECONDARY)
+
+    @staticmethod
+    def is_accent(codepoint: str) -> bool:
+        """True if accent symbol"""
+        return codepoint in {IPA.ACCENT_ACUTE, IPA.ACCENT_GRAVE}
 
     @staticmethod
     def is_tie(codepoint: str) -> bool:
@@ -158,9 +166,13 @@ class IPA(str, Enum):
         return graphemes
 
     @staticmethod
-    def without_stress(codepoints: str) -> str:
+    def without_stress(codepoints: str, drop_accent: bool = True) -> str:
         """Return string without primary/secondary stress"""
-        return "".join(c for c in codepoints if not IPA.is_stress(c))
+        return "".join(
+            c
+            for c in codepoints
+            if (not IPA.is_stress(c) and (not drop_accent or not IPA.is_accent(c)))
+        )
 
 
 class Stress(str, Enum):
@@ -169,6 +181,14 @@ class Stress(str, Enum):
     NONE = "none"
     PRIMARY = "primary"
     SECONDARY = "secondary"
+
+
+class Accent(str, Enum):
+    """Applied accent"""
+
+    NONE = "none"
+    ACUTE = "acute"  # '
+    GRAVE = "grave"  # ²
 
 
 class BreakType(str, Enum):

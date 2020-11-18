@@ -61,6 +61,14 @@ class PronunciationTestCase(unittest.TestCase):
             phone_strs, ["h", "w", "i", "ə", "n˧˨", "z", "i", "ə", "w˨ˀ˩ʔ"]
         )
 
+    def test_accents(self):
+        """Test Pronuncation.from_string with accents"""
+        pron_str = "/²'alːdɑːglɪg/"
+        pron = Pronunciation.from_string(pron_str)
+
+        phone_strs = [p.text for p in pron]
+        self.assertEqual(phone_strs, ["²'a", "lː", "d", "ɑː", "g", "l", "ɪ", "g"])
+
 
 # -----------------------------------------------------------------------------
 
