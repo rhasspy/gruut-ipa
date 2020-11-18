@@ -768,7 +768,10 @@ class Phonemes:
         else:
             # Split string into pronunciation
             pron = Pronunciation.from_string(
-                pron_str, keep_stress=keep_stress, drop_tones=drop_tones
+                pron_str,
+                keep_stress=keep_stress,
+                keep_accents=keep_accents,
+                drop_tones=drop_tones,
             )
 
         # Get text for IPA phones
