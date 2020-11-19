@@ -456,11 +456,20 @@ class Pronunciation:
 class Phoneme:
     """Phoneme composed of international phonetic alphabet symbols"""
 
-    def __init__(self, text: str, example: str = "", unknown: bool = False):
+    def __init__(
+        self,
+        text: str,
+        example: str = "",
+        unknown: bool = False,
+        tones: typing.Optional[typing.Iterable[str]] = None,
+    ):
         self._text = ""
         self._text_compare = ""
         self.example = example
         self.unknown = unknown
+
+        # List of allowable tones for phoneme
+        self.tones = list(tones or [])
 
         self.stress: Stress = Stress.NONE
         self.accents: typing.List[Accent] = []
@@ -621,6 +630,7 @@ class Phoneme:
             "text": repr(self),
             "letters": self.letters,
             "tone": self.tone,
+            "tones": self.tones,
         }
 
         if self.unknown:
@@ -650,8 +660,8 @@ class Phoneme:
 
         props["type"] = type_name
 
-        props["nasalated"] = self.nasalated
-        props["raised"] = self.raised
+        props["nasalated"] = list(self.nasalated)
+        props["raised"] = list(self.raised)
         props["elongated"] = self.elongated
 
         return props
@@ -712,7 +722,7 @@ class Phonemes:
             line, *_ = line.split(Phonemes.COMMENT_STR, maxsplit=1)
             line = line.strip()
             if line:
-                # phoneme [example] [allophone] [allophone]...
+                # phoneme [example] [allophone] [allophone] ! [tone] [tone]...
                 parts = line.split()
                 phoneme_ipa = parts[0]
                 example = ""
@@ -720,12 +730,23 @@ class Phonemes:
                 if len(parts) > 1:
                     example = parts[1]
 
+                tones = []
                 if len(parts) > 2:
-                    # Map allophone back to phoneme
-                    for homophone in parts[2:]:
-                        lang.ipa_map[homophone] = phoneme_ipa
+                    in_tone = False
 
-                lang.phonemes.append(Phoneme(text=phoneme_ipa, example=example))
+                    # Map allophone back to phoneme
+                    for part in parts[2:]:
+                        if part == "!":
+                            # Begin possible tones for this phoneme
+                            in_tone = True
+                        elif in_tone:
+                            tones.append(part)
+                        else:
+                            lang.ipa_map[part] = phoneme_ipa
+
+                lang.phonemes.append(
+                    Phoneme(text=phoneme_ipa, example=example, tones=tones)
+                )
 
         lang.update()
 

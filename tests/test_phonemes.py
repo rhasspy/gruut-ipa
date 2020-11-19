@@ -32,6 +32,18 @@ class PhonemesTestCase(unittest.TestCase):
         phoneme_strs = [p.text for p in pron_phonemes]
         self.assertEqual(phoneme_strs, ["ɐ̃", "p", "l", "i", "ɐ̃w̃"])
 
+    def test_tones(self):
+        """Test Phonemes.split with tones"""
+        # á khôi
+        pron_str = "/a˨˦xoj˧˧/"
+
+        lang_phonemes = Phonemes.from_language("vi-n")
+        pron_phonemes = lang_phonemes.split(pron_str)
+
+        # Ensure tones are kept
+        phoneme_strs = [p.text for p in pron_phonemes]
+        self.assertEqual(phoneme_strs, ["a˨˦", "x", "oj˧˧"])
+
 
 # -----------------------------------------------------------------------------
 
