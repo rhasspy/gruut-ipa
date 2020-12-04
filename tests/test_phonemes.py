@@ -20,6 +20,17 @@ class PhonemesTestCase(unittest.TestCase):
         phoneme_strs = [p.text for p in pron_phonemes]
         self.assertEqual(phoneme_strs, ["d͡ʒ", "ʌ", "s", "t", "ə", "k", "ˈaʊ"])
 
+    def test_split_substring(self):
+        """Test Phonemes.split with a substring replacement"""
+        pron_str = "/viːtɛt͡ʃnaː/"
+
+        lang_phonemes = Phonemes.from_language("cs-cz")
+        pron_phonemes = lang_phonemes.split(pron_str, keep_stress=False)
+
+        # Ensure iː doesn't get transformed into ɪː
+        phoneme_strs = [p.text for p in pron_phonemes]
+        self.assertEqual(phoneme_strs, ["v", "iː", "t", "ɛ", "t͡ʃ", "n", "aː"])
+
     def test_dipthong(self):
         """Test Phonemes.from_string with a dipthong"""
         # ampliam
@@ -31,6 +42,17 @@ class PhonemesTestCase(unittest.TestCase):
         # Ensure "ɐ̃" and "ɐ̃w̃" are kept
         phoneme_strs = [p.text for p in pron_phonemes]
         self.assertEqual(phoneme_strs, ["ɐ̃", "p", "l", "i", "ɐ̃w̃"])
+
+    def test_split_dipthong(self):
+        """Test Phonemes.split with a dipthong"""
+        pron_str = "/neu̯rt͡ʃɪtou̯/"
+
+        lang_phonemes = Phonemes.from_language("cs-cz")
+        pron_phonemes = lang_phonemes.split(pron_str, keep_stress=False)
+
+        # Ensure eu̯ ends up as eu̯
+        phoneme_strs = [p.text for p in pron_phonemes]
+        self.assertEqual(phoneme_strs, ["n", "eu̯", "r", "t͡ʃ", "ɪ", "t", "ou̯"])
 
     def test_tones(self):
         """Test Phonemes.split with tones"""

@@ -771,6 +771,11 @@ class Phonemes:
         for match_text, replace_text in sorted(
             self.ipa_map.items(), key=lambda kv: len(kv[0]), reverse=True
         ):
+            if match_text.startswith(","):
+                # Raw regex
+                cases.append(match_text[1:])
+                continue
+
             num_extra = len(replace_text) - len(match_text)
             if (num_extra > 0) and replace_text.startswith(match_text):
                 cases.append(
