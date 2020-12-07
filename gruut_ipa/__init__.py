@@ -758,33 +758,41 @@ class Phonemes:
         # The final regex is of the form (AAA|BB|C) where each case is in
         # decreasing length order.
         #
-        # If the replacement is >= to the length of the text to match, then the
+        # If the replacement is not a substring of any phonemes, then the
         # replacement is straightforward.
         #
-        # If it is smaller *and* a substring, however, we need to be careful.
-        # For example, replacing "e" with "eɪ" in the string "beɪ" will produce
-        # "beeɪ" when we want it to be "beɪ".
+        # If it is a substring of some phoneme, however, we need to be careful.
+        # For example, naively replacing "e" with "eɪ" in the string "beɪ" will
+        # produce "beeɪ" when we want it to be "beɪ".
         #
         # So the substring case becomes "e(?!ɪ)" which uses a negative lookahead
         # to avoid the problem.
         cases = []
-        for match_text, replace_text in sorted(
-            self.ipa_map.items(), key=lambda kv: len(kv[0]), reverse=True
-        ):
+        for match_text in sorted(self.ipa_map.keys(), key=len, reverse=True):
             if match_text.startswith(","):
                 # Raw regex
                 cases.append(match_text[1:])
                 continue
 
-            num_extra = len(replace_text) - len(match_text)
-            if (num_extra > 0) and replace_text.startswith(match_text):
-                cases.append(
-                    "{}(?!{})".format(
-                        re.escape(match_text[:num_extra]),
-                        re.escape(replace_text[num_extra:]),
+            # Check against all of the phonemes
+            case_added = False
+            for phoneme in self.phonemes:
+                num_extra = len(phoneme.text) - len(match_text)
+                if (num_extra > 0) and phoneme.text.startswith(match_text):
+                    # Use negative lookahead to avoid replacing part of a valid
+                    # phoneme.
+                    cases.append(
+                        "{}(?!{})".format(
+                            re.escape(match_text[:num_extra]),
+                            re.escape(phoneme.text[num_extra:]),
+                        )
                     )
-                )
-            else:
+
+                    case_added = True
+                    break
+
+            if not case_added:
+                # No substring problem
                 cases.append(re.escape(match_text))
 
         ipa_map_regex_str = "({})".format("|".join(cases))

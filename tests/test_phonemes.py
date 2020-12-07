@@ -31,6 +31,17 @@ class PhonemesTestCase(unittest.TestCase):
         phoneme_strs = [p.text for p in pron_phonemes]
         self.assertEqual(phoneme_strs, ["v", "iː", "t", "ɛ", "t͡ʃ", "n", "aː"])
 
+    def test_split_diacritics(self):
+        """Test Phonemes.split with a diacritic substring replacement"""
+        pron_str = "/ɑɑ̃/"
+
+        lang_phonemes = Phonemes.from_language("fr-fr")
+        pron_phonemes = lang_phonemes.split(pron_str, keep_stress=False)
+
+        # Ensure first ɑ is transformed into a, but not the second
+        phoneme_strs = [p.text for p in pron_phonemes]
+        self.assertEqual(phoneme_strs, ["a", "ɑ̃"])
+
     def test_dipthong(self):
         """Test Phonemes.from_string with a dipthong"""
         # ampliam
