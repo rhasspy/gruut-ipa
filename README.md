@@ -16,7 +16,7 @@ Features include:
 Supported Languages:
 
 * U.S. English (`en-us`)
-* U.S. English (`en-uk`)
+* U.K. English (`en-gb`)
 * Dutch (`nl`)
 * Czech (`cs-cz`)
 * Italian (`it-it`)
