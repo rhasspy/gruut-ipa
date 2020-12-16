@@ -3,16 +3,10 @@
 # Vowels
 æ نه
 ɒː تا
-e̞ که e
-iː شیر í î
-o تو
+e̞ که e eː
+iː شیر í î i
+o تو oː
 uː زود ʊ
-eː شیر
-oː زور
-
-# Dipthongs
-ej کی
-ow نو
 
 # Consonants
 b برادر
