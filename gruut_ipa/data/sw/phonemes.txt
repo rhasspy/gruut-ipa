@@ -1,0 +1,79 @@
+# https://en.wikipedia.org/wiki/Help:IPA/Swahili
+
+# Vowels
+ɑ b[a]b[a] a
+ɛ nd[e]g[e] e
+i K[i]swah[i]l[i]
+ɔ mt[o]t[o] o
+u [u]h[u]r[u]
+
+# Consonants
+ɓ [b]a[b]a b
+ɗ [d]ola d
+ð [dh]ambi
+ʄ ma[j]f j
+f [f]isi
+ɠ [g]ani g g
+ɣ [gh]ali
+h u[h]uru
+j [y]e[y]e y
+k [k]itabu
+l [l]akini
+m da[m]u m m̩
+ᵐɓ [mb]ali ᵐb
+ᶬv [mv]inyo
+n [n]i[n]i n̩
+ⁿɗ muhi[nd]i
+ᵑg [ng]oma ᵑg
+ⁿɗ͡ʒ  i[nj]ili ɗʒ 
+ⁿz kwa[nz]a
+p kika[p]u
+ɾ [r]afiki r
+s [s]i[s]i
+ʃ [sh]amba
+t mo[t]o
+t͡ʃ [ch]umba tʃ
+θ [th]ela[th]ini
+v [v]itabu
+w [w]atu
+x subul[kh]eri
+z ma[z]iwa
+
+# http://alffa.imag.fr/
+# IPA ALFFA
+# ᵐɓ BB
+# t͡ʃ CC
+# ⁿɗ DD
+# ᵑg GG
+# ⁿɗ͡ʒ JJ
+# ð LL
+# _ NN
+# ɣ RR
+# ʃ SS
+# θ TT
+# ᶬv VV
+# x XX
+# ⁿz ZZ
+# ɑ a
+# ɓ b
+# ɗ d
+# ɛ e
+# f f
+# ɠ g
+# h h
+# i i
+# ʄ j
+# k k
+# l l
+# m m
+# n n
+# ɔ o
+# p p
+# ɾ r
+# s s
+# t t
+# u u
+# v v
+# w w
+# j y
+# z z
