@@ -462,6 +462,7 @@ class Phoneme:
         example: str = "",
         unknown: bool = False,
         tones: typing.Optional[typing.Iterable[str]] = None,
+        is_ipa: bool = True,
     ):
         self._text = ""
         self._text_compare = ""
@@ -482,50 +483,54 @@ class Phoneme:
         codepoints = unicodedata.normalize("NFD", text)
         self.letters = ""
         self.tone = ""
-        in_tone = False
-        letter_index = 0
-        new_letter = False
 
-        for c in codepoints:
-            # Check for stress
-            if (c == IPA.ACCENT_ACUTE) and (not in_tone):
-                self.accents.append(Accent.ACUTE)
-            elif (c == IPA.ACCENT_GRAVE) and (not in_tone):
-                self.accents.append(Accent.GRAVE)
-            elif c == IPA.STRESS_PRIMARY:
-                self.stress = Stress.PRIMARY
-            elif c == IPA.STRESS_SECONDARY:
-                self.stress = Stress.SECONDARY
-            elif in_tone and (c in {IPA.TONE_GLOTTALIZED, IPA.TONE_SHORT}):
-                # Interpret as part of tone
-                self.tone += c
-            elif IPA.is_long(c):
-                # Check for elongation
-                self.elongated = True
-            elif IPA.is_nasal(c):
-                # Check for nasalation
-                self.nasalated.add(letter_index)
-            elif IPA.is_raised(c):
-                # Check for raised articulation
-                self.raised.add(letter_index)
-            elif IPA.is_bracket(c) or IPA.is_break(c):
-                # Skip brackets/syllable breaks
-                pass
-            elif IPA.is_tone(c):
-                # Keep tone separate
-                self.tone += c
-                in_tone = True
-            elif c in {IPA.SYLLABIC, IPA.NON_SYLLABIC, IPA.EXTRA_SHORT}:
-                # Stow some diacritics that we don't do anything with
-                self._extra_combining[letter_index].append(c)
-            else:
-                # Include all other characters in base
-                self.letters += c
+        if is_ipa:
+            in_tone = False
+            letter_index = 0
+            new_letter = False
 
-                if new_letter:
-                    letter_index += 1
+            for c in codepoints:
+                # Check for stress
+                if (c == IPA.ACCENT_ACUTE) and (not in_tone):
+                    self.accents.append(Accent.ACUTE)
+                elif (c == IPA.ACCENT_GRAVE) and (not in_tone):
+                    self.accents.append(Accent.GRAVE)
+                elif c == IPA.STRESS_PRIMARY:
+                    self.stress = Stress.PRIMARY
+                elif c == IPA.STRESS_SECONDARY:
+                    self.stress = Stress.SECONDARY
+                elif in_tone and (c in {IPA.TONE_GLOTTALIZED, IPA.TONE_SHORT}):
+                    # Interpret as part of tone
+                    self.tone += c
+                elif IPA.is_long(c):
+                    # Check for elongation
+                    self.elongated = True
+                elif IPA.is_nasal(c):
+                    # Check for nasalation
+                    self.nasalated.add(letter_index)
+                elif IPA.is_raised(c):
+                    # Check for raised articulation
+                    self.raised.add(letter_index)
+                elif IPA.is_bracket(c) or IPA.is_break(c):
+                    # Skip brackets/syllable breaks
+                    pass
+                elif IPA.is_tone(c):
+                    # Keep tone separate
+                    self.tone += c
+                    in_tone = True
+                elif c in {IPA.SYLLABIC, IPA.NON_SYLLABIC, IPA.EXTRA_SHORT}:
+                    # Stow some diacritics that we don't do anything with
+                    self._extra_combining[letter_index].append(c)
+                else:
+                    # Include all other characters in base
+                    self.letters += c
 
-                new_letter = True
+                    if new_letter:
+                        letter_index += 1
+
+                    new_letter = True
+        else:
+            self.letters = text
 
         # Re-normalize and combine letters
         self.letters = unicodedata.normalize("NFC", self.letters)
@@ -694,6 +699,9 @@ class Phonemes:
         # Phonemes sorted by descreasing length
         self._phonemes_sorted = None
 
+        # Map from original phoneme to gruut IPA
+        self.gruut_ipa_map: typing.Dict[str, str] = {}
+
         self.update()
 
     def __iter__(self):
@@ -708,9 +716,29 @@ class Phonemes:
     @staticmethod
     def from_language(language: str) -> "Phonemes":
         """Load phonemes for a given language"""
+        # Load phonemes themselves
         phonemes_path = _DATA_DIR / language / "phonemes.txt"
         with open(phonemes_path, "r") as phonemes_file:
-            return Phonemes.from_text(phonemes_file)
+            phonemes = Phonemes.from_text(phonemes_file)
+
+        # Try to load optional map from original phoneme to gruut IPA
+        gruut_ipa_map: typing.Optional[typing.Dict[str, str]] = None
+        map_path = _DATA_DIR / language / "ipa_map.txt"
+        if map_path.is_file():
+            gruut_ipa_map = {}
+            with open(map_path, "r") as map_file:
+                for line in map_file:
+                    line = line.strip()
+                    if not line:
+                        continue
+
+                    from_phoneme, to_ipa = line.split(maxsplit=1)
+                    gruut_ipa_map[from_phoneme] = to_ipa
+
+        if gruut_ipa_map:
+            phonemes.gruut_ipa_map = gruut_ipa_map
+
+        return phonemes
 
     @staticmethod
     def from_text(text_file) -> "Phonemes":
@@ -814,6 +842,7 @@ class Phonemes:
         keep_stress: bool = False,
         keep_accents: typing.Optional[bool] = None,
         drop_tones: bool = False,
+        is_ipa: bool = True,
     ) -> typing.List[Phoneme]:
         """Split an IPA pronunciation into phonemes"""
         if not self._ipa_map_regex:
@@ -834,10 +863,11 @@ class Phonemes:
 
             pron_str = self._ipa_map_regex.sub(handle_replace, pron_str)
 
+        # Get text for IPA phones
         if isinstance(pron_str, Pronunciation):
             # Use supplied pronunication
-            pron = pron_str
-        else:
+            ipas = [pb.text for pb in pron_str]
+        elif is_ipa:
             # Split string into pronunciation
             pron = Pronunciation.from_string(
                 pron_str,
@@ -845,39 +875,41 @@ class Phonemes:
                 keep_accents=keep_accents,
                 drop_tones=drop_tones,
             )
-
-        # Get text for IPA phones
-        ipas = [pb.text for pb in pron]
+            ipas = [pb.text for pb in pron]
+        else:
+            ipas = IPA.graphemes(pron_str)
 
         # Keep stress and tones separate to make phoneme comparisons easier
         ipa_stress: typing.Dict[int, str] = defaultdict(str)
         ipa_tones: typing.Dict[int, str] = defaultdict(str)
-        in_tone = False
-        for ipa_idx, ipa in enumerate(ipas):
-            if ipa:
-                keep_ipa = ""
-                for codepoint in ipa:
-                    if IPA.is_accent(codepoint) and (not in_tone):
-                        if keep_accents:
-                            ipa_stress[ipa_idx] += codepoint
-                    elif IPA.is_stress(codepoint):
-                        if keep_stress:
-                            ipa_stress[ipa_idx] += codepoint
-                    elif in_tone and (
-                        codepoint in {IPA.TONE_GLOTTALIZED, IPA.TONE_SHORT}
-                    ):
-                        # Interpret as part of time
-                        if not drop_tones:
-                            ipa_tones[ipa_idx] += codepoint
-                    elif IPA.is_tone(codepoint):
-                        if not drop_tones:
-                            ipa_tones[ipa_idx] += codepoint
 
-                        in_tone = True
-                    else:
-                        keep_ipa += codepoint
+        if is_ipa:
+            in_tone = False
+            for ipa_idx, ipa in enumerate(ipas):
+                if ipa:
+                    keep_ipa = ""
+                    for codepoint in ipa:
+                        if IPA.is_accent(codepoint) and (not in_tone):
+                            if keep_accents:
+                                ipa_stress[ipa_idx] += codepoint
+                        elif IPA.is_stress(codepoint):
+                            if keep_stress:
+                                ipa_stress[ipa_idx] += codepoint
+                        elif in_tone and (
+                            codepoint in {IPA.TONE_GLOTTALIZED, IPA.TONE_SHORT}
+                        ):
+                            # Interpret as part of time
+                            if not drop_tones:
+                                ipa_tones[ipa_idx] += codepoint
+                        elif IPA.is_tone(codepoint):
+                            if not drop_tones:
+                                ipa_tones[ipa_idx] += codepoint
 
-                ipas[ipa_idx] = keep_ipa
+                            in_tone = True
+                        else:
+                            keep_ipa += codepoint
+
+                    ipas[ipa_idx] = keep_ipa
 
         num_ipas: int = len(ipas)
 

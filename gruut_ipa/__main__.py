@@ -203,8 +203,30 @@ def do_phonemes(args):
 
 def do_convert(args):
     """Convert pronunciations between different representations"""
+    from . import Phoneme, Phonemes
     from .espeak import espeak_to_ipa, ipa_to_espeak
     from .sampa import ipa_to_sampa, sampa_to_ipa
+
+    fixed_src_dest = {"ipa", "espeak", "sampa"}
+    src_phonemes: typing.Optional[Phonemes] = None
+    dest_phonemes: typing.Optional[Phonemes] = None
+
+    if args.src not in fixed_src_dest:
+        src_phonemes = Phonemes.from_language(args.src)
+
+    if args.dest not in fixed_src_dest:
+        dest_phoneme_map = Phonemes.from_language(args.dest).gruut_ipa_map
+
+        # ipa -> original phoneme
+        dest_phonemes = Phonemes()
+        for k, v in dest_phoneme_map.items():
+            if v in dest_phonemes.gruut_ipa_map:
+                continue
+
+            dest_phonemes.phonemes.append(Phoneme(text=k, is_ipa=False))
+            dest_phonemes.ipa_map[v] = k
+
+        dest_phonemes.update()
 
     if args.pronunciation:
         # From arguments
@@ -226,7 +248,11 @@ def do_convert(args):
             elif args.src == "sampa":
                 src_ipa = sampa_to_ipa(line)
             else:
-                raise ValueError(args.src)
+                assert src_phonemes is not None
+                src_ipa = "".join(
+                    src_phonemes.gruut_ipa_map.get(p.text, p.text)
+                    for p in src_phonemes.split(line)
+                )
 
             if args.dest == "ipa":
                 dest_pron = src_ipa
@@ -235,7 +261,10 @@ def do_convert(args):
             elif args.dest == "sampa":
                 dest_pron = ipa_to_sampa(src_ipa)
             else:
-                raise ValueError(args.dest)
+                assert dest_phonemes is not None
+                dest_pron = "".join(
+                    p.text for p in dest_phonemes.split(src_ipa, is_ipa=False)
+                )
 
             print(dest_pron)
             sys.stdout.flush()
@@ -258,7 +287,7 @@ def get_args() -> argparse.Namespace:
     # -----
     print_parser = sub_parsers.add_parser("print", help="Print all known IPA phones")
     print_parser.add_argument(
-        "--language", help="Only print phones from a specific language"
+        "--language", help="Only print phones from a specific language or language/set"
     )
     print_parser.set_defaults(func=do_print)
 
@@ -328,10 +357,10 @@ def get_args() -> argparse.Namespace:
     )
     convert_parser.set_defaults(func=do_convert)
     convert_parser.add_argument(
-        "src", choices=["ipa", "espeak", "sampa"], help="Source format"
+        "src", help="Source format (language, language/set, ipa, espeak, sampa)"
     )
     convert_parser.add_argument(
-        "dest", choices=["ipa", "espeak", "sampa"], help="Destination format"
+        "dest", help="Destination format (language, language/set, ipa, espeak, sampa)"
     )
     convert_parser.add_argument(
         "pronunciation",
