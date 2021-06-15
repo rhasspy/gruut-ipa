@@ -33,7 +33,7 @@ $ pip install gruut-ipa
 
 ## Dependencies
 
-* Python 3.7 or higher
+* Python 3.6 or higher
 
 For command-line usage, you may also want:
 
