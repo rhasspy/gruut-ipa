@@ -15,15 +15,19 @@ Features include:
     
 Supported Languages:
 
+* Arabic (`ar`)
+* Czech (`cs-cz`)
+* German (`de-de`)
 * U.S. English (`en-us`)
 * U.K. English (`en-gb`)
-* Dutch (`nl`)
-* Czech (`cs-cz`)
-* Italian (`it-it`)
-* German (`de-de`)
-* French (`fr-fr`)
 * Spanish (`es-es`)
+* Persian/Farsi (`fa`)
+* Spanish (`es-es`)
+* Italian (`it-it`)
+* Dutch (`nl`)
+* Portuguese (`pt`)
 * Russian (`ru-ru`)
+* Swahili (`sw`)
     
 ## Installing
 
