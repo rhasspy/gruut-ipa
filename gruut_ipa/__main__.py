@@ -249,7 +249,7 @@ def do_convert(args):
                 src_ipa = sampa_to_ipa(line)
             else:
                 assert src_phonemes is not None
-                src_ipa = "".join(
+                src_ipa = args.separator.join(
                     src_phonemes.gruut_ipa_map.get(p.text, p.text)
                     for p in src_phonemes.split(line)
                 )
@@ -262,7 +262,7 @@ def do_convert(args):
                 dest_pron = ipa_to_sampa(src_ipa)
             else:
                 assert dest_phonemes is not None
-                dest_pron = "".join(
+                dest_pron = args.separator.join(
                     p.text for p in dest_phonemes.split(src_ipa, is_ipa=False)
                 )
 
@@ -366,6 +366,9 @@ def get_args() -> argparse.Namespace:
         "pronunciation",
         nargs="*",
         help="Pronunciations (read from stdin if not provided)",
+    )
+    convert_parser.add_argument(
+        "--separator", default=" ", help="Separator between phonemes (default: space)"
     )
 
     # Shared arguments

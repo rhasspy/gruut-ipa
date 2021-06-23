@@ -122,7 +122,7 @@ d͡ʒ ʌ s t ə k aʊ
 Convert between IPA, [espeak](https://github.com/espeak-ng/), and [sampa](https://www.phon.ucl.ac.uk/home/sampa/):
 
 ```sh
-$ python3 -m gruut_ipa convert ipa espeak "/mʊmˈbaɪ/"
+$ python3 -m gruut_ipa convert ipa espeak "mʊmˈbaɪ"
 [[mUm'baI]]
 
 $ python3 -m gruut_ipa convert espeak ipa "[[D,Is Iz sVm f@n'EtIk t'Ekst 'InpUt]]"
@@ -135,6 +135,30 @@ Chain commands together:
 $ python3 -m gruut_ipa convert espeak ipa "[[k'aU]]" | \
     python3 -m gruut_ipa phonemes en-us --keep-stress
 k ˈaʊ
+```
+
+### Alternative Phoneme Sets
+
+Some languages have multiple phoneme sets available:
+
+* U.S. English (`en-us`)
+    * CMUDict (`en-us/cmudict`)
+    * [Zamia](https://github.com/gooofy/zamia-speech) (`en-us/zamia`)
+* Swahili (`sw`)
+    * [ALFFA](http://alffa.imag.fr/) (`sw/alffa`)
+    
+Convert from IPA to alternative phoneme set:
+
+```sh
+$ python3 -m gruut_ipa convert ipa en-us/cmudict "h ɛ l ˈoʊ w ˈɚ l d"
+HH EH0 L OW1 W ER1 L D
+```
+
+Convert from alternative phoneme set to IPA:
+
+```sh
+$ python3 -m gruut_ipa convert en-us/cmudict ipa "HH EH0 L OW1 W ER1 L D"
+h ɛ l ˈoʊ w ˈɚ l d
 ```
 
 ## Scripts

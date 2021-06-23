@@ -1,21 +1,54 @@
 AA [au]nt
+AA0
+AA1
+AA2
 AE [a]lan
+AE0
+AE1
+AE2
 AH b[u]n
+AH0
+AH1
+AH2
 AO also
+AO0
+AO1
+AO2
 AW d[ow]n
+AW0
+AW1
+AW2
 AY b[i]ke
+AY0
+AY1
+AY2
 B a[b]le
 CH ea[ch]
 D an[d]y
 DH [th]an
 EH b[e]ll
+EH0
+EH1
+EH2
 ER b[ir]d
+ER0
+ER1
+ER2
 EY aw[ay]
+EY0
+EY1
+EY2
 F [f]ace
 G ba[g]s
 HH [h]alf
 IH s[i]t
+IH0
+IH1
+IH2
 IY army
+IY0
+IY1
+IY2
 JH e[dge]
 K as[k]
 L a[l]ex
@@ -23,7 +56,13 @@ M bo[mb]
 N ame[n]
 NG ba[ng]
 OW bl[ow]
+OW0
+OW1
+OW2
 OY j[oi]n
+OY0
+OY1
+OY2
 P cam[p]
 R a[r]ea
 S art[s]
@@ -31,7 +70,13 @@ SH bu[sh]
 T an[t]i
 TH ba[th]
 UH b[oo]k
+UH0
+UH1
+UH2
 UW bl[ue]
+UW0
+UW1
+UW2
 V da[v]e
 W [wh]at
 Y c[u]te
