@@ -1,3 +1,5 @@
+I forked this repository to add luxembourgish as language.
+
 # Gruut IPA
 
 Library for manipulating [International Phonetic Alphabet](https://en.wikipedia.org/wiki/International_Phonetic_Alphabet) (IPA) pronunciations.
@@ -91,9 +93,9 @@ Phonemes for a given language come from [phonological analyses](https://en.wikip
 Print JSON information about phones:
 
 ```sh
-$ python3 -m gruut_ipa describe "ˈãː" | jq .
+$ python3 -m gruut_ipa describe "ˈãː" | jq .
 {
-  "text": "ˈãː",
+  "text": "ˈãː",
   "letters": "a",
   "stress": "primary",
   "height": "open",
