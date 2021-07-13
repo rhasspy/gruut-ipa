@@ -15,6 +15,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v1
+      - name: Install dependencies on macOS
+        if: startsWith(matrix.os, 'macos')
+        run: brew install coreutils
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v1
         with:
