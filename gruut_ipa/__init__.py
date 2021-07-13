@@ -9,6 +9,7 @@ from pathlib import Path
 from .constants import (  # noqa: F401
     CONSONANTS,
     IPA,
+    LANG_ALIASES,
     SCHWAS,
     VOWELS,
     Accent,
@@ -713,9 +714,14 @@ class Phonemes:
     def __getitem__(self, key):
         return self.phonemes[key]
 
+    def __in__(self, key):
+        return key in self.phonemes
+
     @staticmethod
     def from_language(language: str) -> "Phonemes":
         """Load phonemes for a given language"""
+        language = resolve_lang(language)
+
         # Load phonemes themselves
         phonemes_path = _DATA_DIR / language / "phonemes.txt"
         with open(phonemes_path, "r") as phonemes_file:
@@ -960,3 +966,16 @@ class Phonemes:
                 word_phonemes.append(Phoneme(text=ipa, unknown=True))
 
         return word_phonemes
+
+
+# -----------------------------------------------------------------------------
+
+
+def resolve_lang(lang: str) -> str:
+    """Resolve language with known aliases"""
+    if "/" in lang:
+        lang, rest = lang.split("/", maxsplit=1)
+        lang = LANG_ALIASES.get(lang, lang)
+        return f"{lang}/{rest}"
+
+    return LANG_ALIASES.get(lang, lang)
