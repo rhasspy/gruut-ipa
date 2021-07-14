@@ -1,5 +1,7 @@
 """Methods for mapping phonemes from one language to another"""
 import typing
+import unicodedata
+from copy import copy
 
 from . import Phoneme, Phonemes
 from .constants import (
@@ -17,136 +19,156 @@ R_LIKE = ["ɹ", "ʁ", "r", "ʀ", "ɻ"]
 SCHWA_PREFERRED = ["ə", "ɐ"]
 GS = ["ɡ", "g"]
 
+MATCHING_PHONEMES = typing.List[Phoneme]
+PHONEMES_AND_DISTANCE = typing.Tuple[MATCHING_PHONEMES, typing.Optional[float]]
+
 
 def guess_phonemes(
-    from_phoneme: typing.Union[str, Phoneme], to_phonemes: Phonemes
-) -> typing.Optional[typing.Union[str, typing.List[str]]]:
-    """Get best single phoneme match"""
-    best_to_phoneme: typing.Optional[str] = None
-    min_dist: typing.Optional[float] = None
+    from_phoneme: typing.Union[str, Phoneme],
+    to_phonemes: Phonemes,
+    return_distance: bool = False,
+) -> typing.Union[MATCHING_PHONEMES, PHONEMES_AND_DISTANCE]:
+    """Get best matching phonemes for a single phoneme"""
+    best_phonemes: MATCHING_PHONEMES = []
+    best_dist: typing.Optional[float] = None
+
+    from_codepoints: typing.Optional[typing.Set[str]] = None
 
     if isinstance(from_phoneme, str):
+        # Parse phoneme
         from_phoneme = Phoneme(from_phoneme)
 
     if from_phoneme.text in GS:
         # Correctly map two forms of "g"
         for maybe_g in GS:
             if maybe_g in to_phonemes:
-                return maybe_g
+                best_phonemes = [Phoneme(maybe_g)]
+                best_dist = 0.0
+                break
 
-    if from_phoneme.schwa:
+    if (not best_phonemes) and from_phoneme.schwa:
         for maybe_schwa in SCHWA_PREFERRED:
             # Try known schwa preferences
             if maybe_schwa in to_phonemes:
-                return maybe_schwa
+                best_phonemes = [Phoneme(maybe_schwa)]
+                best_dist = 0.0
+                break
 
-        if from_phoneme.schwa.r_coloured:
+        if (not best_phonemes) and from_phoneme.schwa.r_coloured:
             # Try r-like
             for maybe_r_like in R_LIKE:
                 if maybe_r_like in to_phonemes:
-                    return maybe_r_like
+                    best_phonemes = [Phoneme(maybe_r_like)]
+                    best_dist = 0.0
+                    break
 
-        # Treat as a mid-central vowel
-        setattr(
-            from_phoneme,
-            "vowel",
-            Vowel(
-                ipa="ə",
-                height=VowelHeight.MID,
-                placement=VowelPlacement.CENTRAL,
-                rounded=False,
-            ),
-        )
+        if not best_phonemes:
+            # Treat as a mid-central vowel
+            from_phoneme = copy(from_phoneme)
+            setattr(
+                from_phoneme,
+                "vowel",
+                Vowel(
+                    ipa="ə",
+                    height=VowelHeight.MID,
+                    placement=VowelPlacement.CENTRAL,
+                    rounded=False,
+                ),
+            )
 
+    if (not best_phonemes) and (from_phoneme.text in R_LIKE):
+        # Map r-like consonant
+        for maybe_r in R_LIKE:
+            if maybe_r in to_phonemes:
+                best_phonemes = [Phoneme(maybe_r)]
+                best_dist = 0.0
+                break
+
+    if best_phonemes:
+        if return_distance:
+            return best_phonemes, best_dist
+
+        return best_phonemes
+
+    # Search through target phonemes
     for to_phoneme in to_phonemes:
         if from_phoneme.text == to_phoneme.text:
-            # Easy case
-            return to_phoneme.text
+            # Easy case: exact match
+            best_phonemes = [to_phoneme]
+            best_dist = 0.0
+            break
 
-        if (not from_phoneme.dipthong) and (from_phoneme.letters == to_phoneme.letters):
+        if from_phoneme.letters == to_phoneme.letters:
             # Match except for elongation, accent
-            return to_phoneme.text
+            if from_codepoints is None:
+                from_codepoints = set(unicodedata.normalize("NFD", from_phoneme.text))
+
+            # Compute a "distance" based on how many codepoints different between the two phonemes.
+            # This should usually be < 1 so that it can be a better match than the vowel/consonant distances.
+            to_codepoints = set(unicodedata.normalize("NFD", to_phoneme.text))
+
+            # Divide by 10 to ensure this is usually < 1
+            dist = abs(len(from_codepoints) - len(to_codepoints)) / 10.0
+
+            if (best_dist is None) or (dist < best_dist):
+                best_phonemes = [to_phoneme]
+                best_dist = dist
+
+            continue
 
         if from_phoneme.vowel and to_phoneme.vowel:
             # Vowel distance
             dist = vowel_distance(from_phoneme.vowel, to_phoneme.vowel)
+
+            # Extra penalty for not matching elongation
             dist += 0.5 if from_phoneme.elongated != to_phoneme.elongated else 0
 
-            if (min_dist is None) or (dist < min_dist):
-                min_dist = dist
-                best_to_phoneme = to_phoneme.text
+            if (best_dist is None) or (dist < best_dist):
+                best_dist = dist
+                best_phonemes = [to_phoneme]
+                continue
 
-        elif from_phoneme.consonant and to_phoneme.consonant:
+        if from_phoneme.consonant and to_phoneme.consonant:
             # Consonant distance
             dist = consonant_distance(from_phoneme.consonant, to_phoneme.consonant)
+            # Extra penalty for not matching elongation
             dist += 0.5 if from_phoneme.elongated != to_phoneme.elongated else 0
 
-            if (min_dist is None) or (dist < min_dist):
-                min_dist = dist
-                best_to_phoneme = to_phoneme.text
+            if (best_dist is None) or (dist < best_dist):
+                best_dist = dist
+                best_phonemes = [to_phoneme]
+                continue
 
-        elif from_phoneme.dipthong:
-            # Split dithong apart and match
-            best_to_phoneme_1 = None
-            best_to_phoneme_1_dist = None
+        if from_phoneme.dipthong:
+            # Split dithong apart and match each vowel separately
+            guessed_1, dist_1 = typing.cast(
+                PHONEMES_AND_DISTANCE,
+                guess_phonemes(
+                    from_phoneme.dipthong.vowel1.ipa, to_phonemes, return_distance=True
+                ),
+            )
+            guessed_2, dist_2 = typing.cast(
+                PHONEMES_AND_DISTANCE,
+                guess_phonemes(
+                    from_phoneme.dipthong.vowel2.ipa, to_phonemes, return_distance=True
+                ),
+            )
 
-            best_to_phoneme_2 = None
-            best_to_phoneme_2_dist = None
+            if guessed_1 and guessed_2:
+                assert (dist_1 is not None) and (dist_2 is not None)
 
-            for to_phoneme_vowel in to_phonemes:
-                if not to_phoneme_vowel.vowel:
+                # +1 penalty for splitting dipthong apart
+                dist = 1 + dist_1 + dist_2
+
+                if (best_dist is None) or (dist < best_dist):
+                    best_phonemes = guessed_1 + guessed_2
+                    best_dist = dist
                     continue
 
-                dist1 = vowel_distance(
-                    from_phoneme.dipthong.vowel1, to_phoneme_vowel.vowel
-                )
-                dist2 = vowel_distance(
-                    from_phoneme.dipthong.vowel2, to_phoneme_vowel.vowel
-                )
+    if return_distance:
+        return best_phonemes, best_dist
 
-                if (best_to_phoneme_1_dist is None) or (dist1 < best_to_phoneme_1_dist):
-                    # First vowel
-                    best_to_phoneme_1 = to_phoneme_vowel
-                    best_to_phoneme_1_dist = dist1
-
-                if (best_to_phoneme_2_dist is None) or (dist2 < best_to_phoneme_2_dist):
-                    # Second vowel
-                    best_to_phoneme_2 = to_phoneme_vowel
-                    best_to_phoneme_2_dist = dist2
-
-            if (best_to_phoneme_1 is not None) and (best_to_phoneme_2 is not None):
-                return [best_to_phoneme_1.text, best_to_phoneme_2.text]
-
-    return best_to_phoneme
-
-
-def guess_phoneme_map(
-    from_phonemes: typing.Union[str, Phonemes], to_phonemes: typing.Union[str, Phonemes]
-) -> typing.Dict[str, typing.Union[str, typing.List[str]]]:
-    """Guess a phoneme mapping from one language to another"""
-    if isinstance(from_phonemes, str):
-        from_phonemes = Phonemes.from_language(from_phonemes)
-
-    if isinstance(to_phonemes, str):
-        to_phonemes = Phonemes.from_language(to_phonemes)
-
-    # Guess mapping
-    mapping = {}
-    for from_phoneme in from_phonemes:
-        to_phoneme_str = guess_phonemes(from_phoneme, to_phonemes)
-        if to_phoneme_str is None:
-            continue
-
-        if (from_phoneme.text in R_LIKE) and (to_phoneme_str not in R_LIKE):
-            # Re-map r-like
-            for maybe_r in R_LIKE:
-                if maybe_r in to_phonemes:
-                    to_phoneme_str = maybe_r
-                    break
-
-        mapping[from_phoneme.text] = to_phoneme_str
-
-    return mapping
+    return best_phonemes
 
 
 # ---------------------------------------------------------------------

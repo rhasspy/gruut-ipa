@@ -327,7 +327,7 @@ class Schwa:
     r_coloured: bool
 
 
-_SCHWAS = [Schwa("ə", False), Schwa("ɚ", True), Schwa("ɝ", True), Schwa("ɹ̩", True)]
+_SCHWAS = [Schwa("ə", False), Schwa("ɚ", True), Schwa("ɝ", True)]
 
 SCHWAS = {s.ipa: s for s in _SCHWAS}
 

@@ -703,6 +703,7 @@ class Phonemes:
         # Map from original phoneme to gruut IPA
         self.gruut_ipa_map: typing.Dict[str, str] = {}
 
+        self.phoneme_texts: typing.Set[str] = {}
         self.update()
 
     def __iter__(self):
@@ -714,8 +715,12 @@ class Phonemes:
     def __getitem__(self, key):
         return self.phonemes[key]
 
-    def __in__(self, key):
-        return key in self.phonemes
+    def __contains__(self, item):
+        if isinstance(item, str):
+            # Compare IPA text
+            return item in self.phoneme_texts
+
+        return item in self.phonemes
 
     @staticmethod
     def from_language(language: str) -> "Phonemes":
@@ -841,6 +846,9 @@ class Phonemes:
         self._phonemes_sorted = sorted(
             split_phonemes, key=lambda kp: len(kp[0]), reverse=True
         )
+
+        # Update IPA texts set for phonemes
+        self.phoneme_texts = set(p.text for p in self.phonemes)
 
     def split(
         self,
