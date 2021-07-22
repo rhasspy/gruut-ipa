@@ -853,7 +853,7 @@ class Phonemes:
     def split(
         self,
         pron_str: typing.Union[str, Pronunciation],
-        keep_stress: bool = False,
+        keep_stress: bool = True,
         keep_accents: typing.Optional[bool] = None,
         drop_tones: bool = False,
         is_ipa: bool = True,
