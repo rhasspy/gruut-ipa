@@ -3,7 +3,7 @@ import typing
 import unicodedata
 from copy import copy
 
-from . import Phoneme, Phonemes
+from . import Phoneme, Phonemes, Pronunciation
 from .constants import (
     Consonant,
     ConsonantPlace,
@@ -139,31 +139,27 @@ def guess_phonemes(
                 best_phonemes = [to_phoneme]
                 continue
 
-        if from_phoneme.dipthong:
-            # Split dithong apart and match each vowel separately
-            guessed_1, dist_1 = typing.cast(
-                PHONEMES_AND_DISTANCE,
-                guess_phonemes(
-                    from_phoneme.dipthong.vowel1.ipa, to_phonemes, return_distance=True
-                ),
-            )
-            guessed_2, dist_2 = typing.cast(
-                PHONEMES_AND_DISTANCE,
-                guess_phonemes(
-                    from_phoneme.dipthong.vowel2.ipa, to_phonemes, return_distance=True
-                ),
-            )
+        if len(from_phoneme.letters) > 1:
+            # Split apart and match each letter separately
+            best_split = []
+            split_phonemes = Pronunciation.from_string(from_phoneme.text)
+            dist = 1
 
-            if guessed_1 and guessed_2:
-                assert (dist_1 is not None) and (dist_2 is not None)
+            for split_phoneme in split_phonemes:
+                guessed_split, dist_split = typing.cast(
+                    PHONEMES_AND_DISTANCE,
+                    guess_phonemes(
+                        split_phoneme.text, to_phonemes, return_distance=True
+                    ),
+                )
 
-                # +1 penalty for splitting dipthong apart
-                dist = 1 + dist_1 + dist_2
+                dist += dist_split
+                best_split.extend(guessed_split)
 
-                if (best_dist is None) or (dist < best_dist):
-                    best_phonemes = guessed_1 + guessed_2
-                    best_dist = dist
-                    continue
+            if (best_dist is None) or (dist < best_dist):
+                best_phonemes = best_split
+                best_dist = dist
+                continue
 
     if return_distance:
         return best_phonemes, best_dist
