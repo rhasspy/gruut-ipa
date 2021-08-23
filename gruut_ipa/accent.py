@@ -15,7 +15,7 @@ from .constants import (
 
 # ---------------------------------------------------------------------
 
-R_LIKE = ["ɹ", "ʁ", "r", "ʀ", "ɻ"]
+R_LIKE = ["ɹ", "ʁ", "r", "ʀ", "ɻ", "ɚ"]
 SCHWA_PREFERRED = ["ə", "ɐ"]
 GS = ["ɡ", "g"]
 
@@ -47,18 +47,19 @@ def guess_phonemes(
                 break
 
     if (not best_phonemes) and from_phoneme.schwa:
-        for maybe_schwa in SCHWA_PREFERRED:
-            # Try known schwa preferences
-            if maybe_schwa in to_phonemes:
-                best_phonemes = [Phoneme(maybe_schwa)]
-                best_dist = 0.0
-                break
-
-        if (not best_phonemes) and from_phoneme.schwa.r_coloured:
+        if from_phoneme.schwa.r_coloured:
             # Try r-like
             for maybe_r_like in R_LIKE:
                 if maybe_r_like in to_phonemes:
                     best_phonemes = [Phoneme(maybe_r_like)]
+                    best_dist = 0.0
+                    break
+
+        if not best_phonemes:
+            for maybe_schwa in SCHWA_PREFERRED:
+                # Try known schwa preferences
+                if maybe_schwa in to_phonemes:
+                    best_phonemes = [Phoneme(maybe_schwa)]
                     best_dist = 0.0
                     break
 
@@ -142,8 +143,10 @@ def guess_phonemes(
         if len(from_phoneme.letters) > 1:
             # Split apart and match each letter separately
             best_split = []
-            split_phonemes = Pronunciation.from_string(from_phoneme.text)
-            dist = 1
+            split_phonemes = Pronunciation.from_string(
+                from_phoneme.text, keep_ties=False
+            )
+            dist = 1.0
 
             for split_phoneme in split_phonemes:
                 guessed_split, dist_split = typing.cast(
@@ -153,6 +156,7 @@ def guess_phonemes(
                     ),
                 )
 
+                assert dist_split is not None
                 dist += dist_split
                 best_split.extend(guessed_split)
 

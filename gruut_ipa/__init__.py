@@ -339,6 +339,7 @@ class Pronunciation:
         keep_stress: bool = True,
         keep_accents: typing.Optional[bool] = None,
         drop_tones: bool = False,
+        keep_ties: bool = True,
     ) -> "Pronunciation":
         """Split an IPA pronunciation into phones.
 
@@ -402,8 +403,12 @@ class Pronunciation:
                 # Add to current cluster
                 pass
             elif IPA.is_tie(codepoint):
-                # Add next non-combining to current cluster
-                skip_next_cluster = True
+                if keep_ties:
+                    # Add next non-combining to current cluster
+                    skip_next_cluster = True
+                else:
+                    # Ignore ties
+                    continue
             elif IPA.is_tone(codepoint):
                 # Add to end of current cluster
                 if not drop_tones:
