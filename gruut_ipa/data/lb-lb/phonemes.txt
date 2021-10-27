@@ -1,1 +1,77 @@
-..
+# Luxembourgish phonemes
+
+# Vowels
+aː k[a]p ɑː
+ə n[e]t
+ɐ kann[er]
+ɛː st[ä]ren
+eː k[ee]ss
+iː l[ii]cht
+oː spr[oo]ch
+uː d[uu]scht
+
+# specific luxembourgish monophthongs
+ɑ k[a]pp
+i m[i]dd
+e m[é]ck
+æ h[e]ll
+o spr[o]ch
+u g[u]tt
+
+# specific luxembourgish diphtongs
+iə h[ie]n
+ɜɪ fr[éi]
+æːɪ z[äi]t
+ɑɪ l[ei]t
+uə b[ue]dem
+əʊ sch[ou]l
+æːʊ r[au]m
+ɑʊ [au]to
+
+# foreign and rare sounds
+œː interi[eu]r
+oɪ [eu]ro
+œ k[ö]nnen
+øː l[ös]en
+
+# Nasal Vowels from Loanwords
+ãː restaur[ant]
+õː sais[on]
+ɛ̃ː cous[in]
+
+# Plosives
+p [p]aken
+b [b]aken
+t blu[tt]
+d [d]äiwel
+k [k]eess
+g [g]eess
+
+# Nasal Consonants
+m [m]a[mm]
+n ma[nn]
+ŋ ke[ng]
+
+# Fricatives
+f [f]ësch
+v [v]akanz
+s taa[ss]
+z [s]ummer
+ʃ bii[sch]t
+χ ku[ch]
+ʁ ku[g]el
+h [h]ei
+
+# Approximants
+j [j]o
+
+# Lateral Approximants
+l [l]of
+ 
+# specific luxembourgish vocals
+ɕ lii[ch]t
+ʑ spi[g]el
+t͡s schwä[tz]en
+w sch[w]aarz
+ʀ [r]ou
+
