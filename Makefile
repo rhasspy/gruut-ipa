@@ -1,10 +1,10 @@
 SHELL := bash
 
-.PHONY: check clean reformat dist test
+.PHONY: check clean reformat dist test install
 
 all: dist
 
-venv:
+install:
 	scripts/create-venv.sh
 
 check:

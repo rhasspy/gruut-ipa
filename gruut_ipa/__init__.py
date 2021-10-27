@@ -9,6 +9,7 @@ from pathlib import Path
 from .constants import (  # noqa: F401
     CONSONANTS,
     IPA,
+    LANG_ALIASES,
     SCHWAS,
     VOWELS,
     Accent,
@@ -338,6 +339,7 @@ class Pronunciation:
         keep_stress: bool = True,
         keep_accents: typing.Optional[bool] = None,
         drop_tones: bool = False,
+        keep_ties: bool = True,
     ) -> "Pronunciation":
         """Split an IPA pronunciation into phones.
 
@@ -401,8 +403,12 @@ class Pronunciation:
                 # Add to current cluster
                 pass
             elif IPA.is_tie(codepoint):
-                # Add next non-combining to current cluster
-                skip_next_cluster = True
+                if keep_ties:
+                    # Add next non-combining to current cluster
+                    skip_next_cluster = True
+                else:
+                    # Ignore ties
+                    continue
             elif IPA.is_tone(codepoint):
                 # Add to end of current cluster
                 if not drop_tones:
@@ -702,6 +708,7 @@ class Phonemes:
         # Map from original phoneme to gruut IPA
         self.gruut_ipa_map: typing.Dict[str, str] = {}
 
+        self.phoneme_texts: typing.Set[str] = {}
         self.update()
 
     def __iter__(self):
@@ -713,9 +720,18 @@ class Phonemes:
     def __getitem__(self, key):
         return self.phonemes[key]
 
+    def __contains__(self, item):
+        if isinstance(item, str):
+            # Compare IPA text
+            return item in self.phoneme_texts
+
+        return item in self.phonemes
+
     @staticmethod
     def from_language(language: str) -> "Phonemes":
         """Load phonemes for a given language"""
+        language = resolve_lang(language)
+
         # Load phonemes themselves
         phonemes_path = _DATA_DIR / language / "phonemes.txt"
         with open(phonemes_path, "r") as phonemes_file:
@@ -836,10 +852,13 @@ class Phonemes:
             split_phonemes, key=lambda kp: len(kp[0]), reverse=True
         )
 
+        # Update IPA texts set for phonemes
+        self.phoneme_texts = set(p.text for p in self.phonemes)
+
     def split(
         self,
         pron_str: typing.Union[str, Pronunciation],
-        keep_stress: bool = False,
+        keep_stress: bool = True,
         keep_accents: typing.Optional[bool] = None,
         drop_tones: bool = False,
         is_ipa: bool = True,
@@ -960,3 +979,16 @@ class Phonemes:
                 word_phonemes.append(Phoneme(text=ipa, unknown=True))
 
         return word_phonemes
+
+
+# -----------------------------------------------------------------------------
+
+
+def resolve_lang(lang: str) -> str:
+    """Resolve language with known aliases"""
+    if "/" in lang:
+        lang, rest = lang.split("/", maxsplit=1)
+        lang = LANG_ALIASES.get(lang, lang)
+        return f"{lang}/{rest}"
+
+    return LANG_ALIASES.get(lang, lang)

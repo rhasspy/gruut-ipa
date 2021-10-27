@@ -4,6 +4,22 @@ import unicodedata
 from dataclasses import dataclass
 from enum import Enum
 
+LANG_ALIASES = {
+    "ar": "ar",
+    "cs": "cs-cz",
+    "de": "de-de",
+    "en": "en-us",
+    "es": "es-es",
+    "fa": "fa",
+    "fr": "fr-fr",
+    "it": "it-it",
+    "nl": "nl",
+    "pt-br": "pt",
+    "ru": "ru-ru",
+    "sv": "sv-se",
+    "sw": "sw",
+}
+
 
 class IPA(str, Enum):
     """International phonetic alphabet characters"""
@@ -251,6 +267,8 @@ _VOWELS = [
     Vowel("i", VowelHeight.CLOSE, VowelPlacement.FRONT, False),
     Vowel("y", VowelHeight.CLOSE, VowelPlacement.FRONT, True),
     Vowel("ɨ", VowelHeight.CLOSE, VowelPlacement.CENTRAL, False),
+    # Alias of ɨ
+    Vowel("ᵻ", VowelHeight.CLOSE, VowelPlacement.CENTRAL, False),
     Vowel("ʉ", VowelHeight.CLOSE, VowelPlacement.CENTRAL, True),
     Vowel("ɯ", VowelHeight.CLOSE, VowelPlacement.BACK, False),
     Vowel("u", VowelHeight.CLOSE, VowelPlacement.BACK, True),
@@ -309,7 +327,7 @@ class Schwa:
     r_coloured: bool
 
 
-_SCHWAS = [Schwa("ə", False), Schwa("ɚ", True), Schwa("ɝ", True), Schwa("ɹ̩", True)]
+_SCHWAS = [Schwa("ə", False), Schwa("ɚ", True), Schwa("ɝ", True)]
 
 SCHWAS = {s.ipa: s for s in _SCHWAS}
 

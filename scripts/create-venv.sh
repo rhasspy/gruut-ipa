@@ -30,9 +30,7 @@ echo "Installing Python dependencies"
 pip3 ${PIP_INSTALL} --upgrade pip
 pip3 ${PIP_INSTALL} --upgrade wheel setuptools
 
-if [[ -f requirements.txt ]]; then
-    pip3 ${PIP_INSTALL} -r requirements.txt
-fi
+pip3 ${PIP_INSTALL} "${src_dir}"
 
 # Development dependencies
 if [[ -f requirements_dev.txt ]]; then
