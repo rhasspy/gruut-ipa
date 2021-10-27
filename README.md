@@ -30,6 +30,7 @@ Supported Languages:
 * Portuguese (`pt`)
 * Russian (`ru-ru`)
 * Swahili (`sw`)
+* Luxembourgish (`lb-lb`)
     
 ## Installing
 
