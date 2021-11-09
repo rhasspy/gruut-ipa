@@ -1,44 +1,41 @@
 # Luxembourgish phonemes
-
-# Vowels
-aː k[a]p ɑː
-ə n[e]t
-ɐ kann[er]
-ɛː st[ä]ren
-eː k[ee]ss
-iː l[ii]cht
-oː spr[oo]ch
-uː d[uu]scht
-
-# specific luxembourgish monophthongs
+# Luxembourgish vowels (monophtongs)
 ɑ k[a]pp
-i m[i]dd
+aː k[a]p
+ɛː st[ä]ren
 e m[é]ck
 æ h[e]ll
+eː k[ee]ss
+ə n[e]t
+ɐ kann[er]
+i m[i]dd
+iː l[ii]cht
 o spr[o]ch
+oː spr[oo]ch
 u g[u]tt
-
-# specific luxembourgish diphtongs
-iə h[ie]n
-ɜɪ fr[éi]
-æːɪ z[äi]t
-ɑɪ l[ei]t
-uə b[ue]dem
-əʊ sch[ou]l
-æːʊ r[au]m
-ɑʊ [au]to
-
-# foreign and rare sounds
-œː interi[eu]r
-oɪ [eu]ro
-œ k[ö]nnen
-øː l[ös]en
-
-# Nasal Vowels from Loanwords
+uː d[uu]scht
+// Monophtongs from loanwoards
+y conj[u]gaisoun
+y: s[ü]den
 ãː restaur[ant]
 õː sais[on]
 ɛ̃ː cous[in]
-
+œː interi[eu]r
+// Luxembourgish diphtongs
+æːɪ z[äi]t
+ɑʊ [au]to
+æːʊ r[au]m
+ɑɪ l[ei]t
+ɜɪ fr[éi]
+oɪ [eu]ro
+iə h[ie]n
+əʊ sch[ou]l
+uə b[ue]dem
+// Consonants
+# Nasals
+m [m]a[mm]
+n ma[nn]
+ŋ ke[ng]
 # Plosives
 p [p]aken
 b [b]aken
@@ -46,31 +43,24 @@ t blu[tt]
 d [d]äiwel
 k [k]eess
 g [g]eess
-
-# Nasal Consonants
-m [m]a[mm]
-n ma[nn]
-ŋ ke[ng]
-
+// Affricates
+ʦ schwä[tz]en
+dʒ bu[dg]et
 # Fricatives
 f [f]ësch
 v [v]akanz
+w sch[w]aarz
 s taa[ss]
 z [s]ummer
 ʃ bii[sch]t
-χ ku[ch]
-ʁ ku[g]el
-h [h]ei
-
-# Approximants
-j [j]o
-
-# Lateral Approximants
-l [l]of
- 
-# specific luxembourgish vocals
+ʒ pro[j]et
+X ku[ch]
 ɕ lii[ch]t
+ʁ ku[g]el
 ʑ spi[g]el
-t͡s schwä[tz]en
-w sch[w]aarz
+h [h]ei
+# Approximants
+l [l]oft
+j [j]o
+// Trills
 ʀ [r]ou
