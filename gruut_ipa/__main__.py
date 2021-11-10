@@ -39,9 +39,9 @@ def main():
 
 def do_print(args):
     """Print known IPA phones"""
-    from . import CONSONANTS, SCHWAS, VOWELS, Phoneme, Phonemes
-    from .espeak import ipa_to_espeak
-    from .sampa import ipa_to_sampa
+    from gruut_ipa import CONSONANTS, SCHWAS, VOWELS, Phoneme, Phonemes
+    from gruut_ipa.espeak import ipa_to_espeak
+    from gruut_ipa.sampa import ipa_to_sampa
 
     allowed_phonemes: typing.Set[str] = set()
 
@@ -50,7 +50,7 @@ def do_print(args):
         phonemes_path = _DATA_DIR / args.language / "phonemes.txt"
 
         _LOGGER.debug("Loading phonemes from %s", phonemes_path)
-        with open(phonemes_path, "r") as phonemes_file:
+        with open(phonemes_path, "r", encoding="utf-8") as phonemes_file:
             phonemes = Phonemes.from_text(phonemes_file)
 
         allowed_phonemes.update(p.text for p in phonemes)
@@ -105,7 +105,7 @@ def do_print(args):
 
 def do_describe(args):
     """Describe IPA phones"""
-    from . import Phoneme
+    from gruut_ipa import Phoneme
 
     if args.phone:
         # From arguments
@@ -131,7 +131,7 @@ def do_describe(args):
 
 def do_phones(args):
     """Group phones in IPA pronunciation"""
-    from . import Pronunciation
+    from gruut_ipa import Pronunciation
 
     if args.pronunciation:
         # From arguments
@@ -157,7 +157,7 @@ def do_phones(args):
 
 def do_phonemes(args):
     """Group phones in IPA pronuncation according to language phonemes"""
-    from . import Phonemes
+    from gruut_ipa import Phonemes
 
     if args.pronunciation:
         # From arguments
@@ -184,7 +184,7 @@ def do_phonemes(args):
             sys.exit(1)
 
     _LOGGER.debug("Loading phonemes from %s", phonemes_path)
-    with open(phonemes_path, "r") as phonemes_file:
+    with open(phonemes_path, "r", encoding="utf-8") as phonemes_file:
         phonemes = Phonemes.from_text(phonemes_file)
 
     for line in pronunciations:
@@ -203,9 +203,9 @@ def do_phonemes(args):
 
 def do_convert(args):
     """Convert pronunciations between different representations"""
-    from . import Phoneme, Phonemes
-    from .espeak import espeak_to_ipa, ipa_to_espeak
-    from .sampa import ipa_to_sampa, sampa_to_ipa
+    from gruut_ipa import Phoneme, Phonemes
+    from gruut_ipa.espeak import espeak_to_ipa, ipa_to_espeak
+    from gruut_ipa.sampa import ipa_to_sampa, sampa_to_ipa
 
     fixed_src_dest = {"ipa", "espeak", "sampa"}
     src_phonemes: typing.Optional[Phonemes] = None

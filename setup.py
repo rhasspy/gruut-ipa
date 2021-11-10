@@ -1,5 +1,4 @@
 """Setup file for gruut-ipa"""
-import os
 from pathlib import Path
 
 import setuptools
@@ -17,11 +16,11 @@ if readme_path.is_file():
 requirements = []
 requirements_path = this_dir / "requirements.txt"
 if requirements_path.is_file():
-    with open(requirements_path, "r") as requirements_file:
+    with open(requirements_path, "r", encoding="utf-8") as requirements_file:
         requirements = requirements_file.read().splitlines()
 
 version_path = this_dir / "VERSION"
-with open(version_path, "r") as version_file:
+with open(version_path, "r", encoding="utf-8") as version_file:
     version = version_file.read().strip()
 
 # -----------------------------------------------------------------------------
@@ -47,6 +46,7 @@ setuptools.setup(
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
         "License :: OSI Approved :: MIT License",
     ],
     long_description=long_description,

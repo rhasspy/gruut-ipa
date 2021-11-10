@@ -3,8 +3,8 @@ import typing
 import unicodedata
 from copy import copy
 
-from . import Phoneme, Phonemes, Pronunciation
-from .constants import (
+from gruut_ipa import Phoneme, Phonemes, Pronunciation
+from gruut_ipa.constants import (
     Consonant,
     ConsonantPlace,
     ConsonantType,

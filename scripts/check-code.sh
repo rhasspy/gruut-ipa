@@ -10,7 +10,7 @@ if [[ -d "${venv}" ]]; then
     source "${venv}/bin/activate"
 fi
 
-python_files=("${src_dir}/gruut_ipa/"*.py)
+python_files=("${src_dir}/gruut_ipa/"*.py "${src_dir}/setup.py")
 python_files+=("${src_dir}/tests/"*.py)
 
 # -----------------------------------------------------------------------------
