@@ -39,7 +39,7 @@ def main():
 
 def do_print(args):
     """Print known IPA phones"""
-    from . import Phoneme, Phonemes, VOWELS, CONSONANTS, SCHWAS
+    from . import CONSONANTS, SCHWAS, VOWELS, Phoneme, Phonemes
     from .espeak import ipa_to_espeak
     from .sampa import ipa_to_sampa
 

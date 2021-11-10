@@ -1,5 +1,3 @@
-I forked this repository to add luxembourgish as language.
-
 # Gruut IPA
 
 Library for manipulating [International Phonetic Alphabet](https://en.wikipedia.org/wiki/International_Phonetic_Alphabet) (IPA) pronunciations.
@@ -26,11 +24,11 @@ Supported Languages:
 * Persian/Farsi (`fa`)
 * Spanish (`es-es`)
 * Italian (`it-it`)
+* Luxembourgish (`lb-lb`)
 * Dutch (`nl`)
 * Portuguese (`pt`)
 * Russian (`ru-ru`)
 * Swahili (`sw`)
-* Luxembourgish (`lb-lb`)
     
 ## Installing
 

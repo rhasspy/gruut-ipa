@@ -82,8 +82,8 @@ class AccentTestCase(unittest.TestCase):
 
     def test_schwa(self):
         """Test schwa mapping"""
-        from gruut_ipa.constants import SCHWAS
         from gruut_ipa.accent import R_LIKE, SCHWA_PREFERRED
+        from gruut_ipa.constants import SCHWAS
 
         for s in SCHWAS:
             guessed = guess_phonemes(s, self.de_phonemes)
