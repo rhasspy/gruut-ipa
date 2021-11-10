@@ -194,15 +194,13 @@ class IPA(str, Enum):
 class Stress(str, Enum):
     """Applied stress"""
 
-    NONE = "none"
-    PRIMARY = "primary"
     SECONDARY = "secondary"
+    PRIMARY = "primary"
 
 
 class Accent(str, Enum):
     """Applied accent"""
 
-    NONE = "none"
     ACUTE = "acute"  # '
     GRAVE = "grave"  # ²
 
@@ -210,9 +208,9 @@ class Accent(str, Enum):
 class BreakType(str, Enum):
     """Type of break"""
 
+    WORD = "word"  # '#'
     MINOR = "minor"  # |
     MAJOR = "major"  # ‖
-    WORD = "word"  # '#'
 
 
 # -----------------------------------------------------------------------------

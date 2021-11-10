@@ -42,7 +42,7 @@ class Phone:
     def __init__(
         self,
         letters: str,
-        stress: Stress = Stress.NONE,
+        stress: typing.Optional[Stress] = None,
         accents: typing.Optional[typing.Iterable[Accent]] = None,
         is_long: bool = False,
         nasal: typing.Optional[typing.Set[int]] = None,
@@ -52,7 +52,7 @@ class Phone:
         tone: str = "",
     ):
         self.letters: str = unicodedata.normalize("NFC", letters)
-        self.stress: Stress = stress
+        self.stress = stress
         self.accents: typing.List[Accent] = list(accents or [])
         self.is_long: bool = is_long
 
@@ -478,7 +478,7 @@ class Phoneme:
         # List of allowable tones for phoneme
         self.tones = list(tones or [])
 
-        self.stress: Stress = Stress.NONE
+        self.stress: typing.Optional[Stress] = None
         self.accents: typing.List[Accent] = []
         self.elongated: bool = False
         self.nasalated: typing.Set[int] = set()
@@ -651,7 +651,7 @@ class Phoneme:
             props["example"] = self.example
 
         props["accents"] = [a.value for a in self.accents]
-        props["stress"] = self.stress.value
+        props["stress"] = self.stress.value if self.stress is not None else ""
 
         if self.vowel:
             type_name = "Vowel"
