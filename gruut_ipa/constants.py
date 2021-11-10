@@ -284,8 +284,8 @@ _VOWELS = [
     Vowel("ɤ", VowelHeight.CLOSE_MID, VowelPlacement.BACK, False),
     Vowel("o", VowelHeight.CLOSE_MID, VowelPlacement.BACK, True),
     #
-    # Represented as a schwa
-    # Vowel("ə", VowelHeight.MID, VowelPlacement.CENTRAL, False),
+    # Represented as a schwa too
+    Vowel("ə", VowelHeight.MID, VowelPlacement.CENTRAL, False),
     #
     Vowel("ɛ", VowelHeight.OPEN_MID, VowelPlacement.FRONT, False),
     Vowel("œ", VowelHeight.OPEN_MID, VowelPlacement.FRONT, True),
@@ -363,6 +363,15 @@ class ConsonantPlace(str, Enum):
     GLOTTAL = "glottal"
 
 
+class ConsonantSoundsLike(str, Enum):
+    """Class of sounds this consonant is similar to"""
+
+    NONE = ""
+    R = "r"
+    G = "g"
+    L = "l"
+
+
 @dataclass
 class Consonant:
     """Necessary information for a consonant"""
@@ -371,6 +380,8 @@ class Consonant:
     type: ConsonantType
     place: ConsonantPlace
     voiced: bool
+    velarized: bool = False
+    sounds_like: ConsonantSoundsLike = ConsonantSoundsLike.NONE
 
 
 # --------------------------------------------------------------------------------------------------------------------------------------------
@@ -404,10 +415,34 @@ _CONSONANTS = [
     Consonant("c", ConsonantType.PLOSIVE, ConsonantPlace.PALATAL, False),
     Consonant("ɟ", ConsonantType.PLOSIVE, ConsonantPlace.PALATAL, True),
     Consonant("k", ConsonantType.PLOSIVE, ConsonantPlace.VELAR, False),
-    Consonant("ɡ", ConsonantType.PLOSIVE, ConsonantPlace.VELAR, True),
-    Consonant("g", ConsonantType.PLOSIVE, ConsonantPlace.VELAR, True),
-    Consonant("q", ConsonantType.PLOSIVE, ConsonantPlace.UVULAR, False),
-    Consonant("ɢ", ConsonantType.PLOSIVE, ConsonantPlace.UVULAR, True),
+    Consonant(
+        "ɡ",
+        ConsonantType.PLOSIVE,
+        ConsonantPlace.VELAR,
+        True,
+        sounds_like=ConsonantSoundsLike.G,
+    ),
+    Consonant(
+        "g",
+        ConsonantType.PLOSIVE,
+        ConsonantPlace.VELAR,
+        True,
+        sounds_like=ConsonantSoundsLike.G,
+    ),
+    Consonant(
+        "q",
+        ConsonantType.PLOSIVE,
+        ConsonantPlace.UVULAR,
+        False,
+        sounds_like=ConsonantSoundsLike.G,
+    ),
+    Consonant(
+        "ɢ",
+        ConsonantType.PLOSIVE,
+        ConsonantPlace.UVULAR,
+        True,
+        sounds_like=ConsonantSoundsLike.G,
+    ),
     Consonant("ʡ", ConsonantType.PLOSIVE, ConsonantPlace.PHARYNGEAL, False),
     Consonant("ʔ", ConsonantType.PLOSIVE, ConsonantPlace.GLOTTAL, False),
     #
@@ -442,31 +477,98 @@ _CONSONANTS = [
     Consonant("x", ConsonantType.FRICATIVE, ConsonantPlace.VELAR, False),
     Consonant("ɣ", ConsonantType.FRICATIVE, ConsonantPlace.VELAR, True),
     Consonant("χ", ConsonantType.FRICATIVE, ConsonantPlace.UVULAR, False),
-    Consonant("ʁ", ConsonantType.FRICATIVE, ConsonantPlace.UVULAR, True),
+    Consonant(
+        "ʁ",
+        ConsonantType.FRICATIVE,
+        ConsonantPlace.UVULAR,
+        True,
+        sounds_like=ConsonantSoundsLike.R,
+    ),
     Consonant("ħ", ConsonantType.FRICATIVE, ConsonantPlace.PHARYNGEAL, False),
     Consonant("h", ConsonantType.FRICATIVE, ConsonantPlace.GLOTTAL, False),
     Consonant("ɦ", ConsonantType.FRICATIVE, ConsonantPlace.GLOTTAL, True),
     #
     Consonant("w", ConsonantType.APPROXIMANT, ConsonantPlace.BILABIAL, True),
     Consonant("ʋ", ConsonantType.APPROXIMANT, ConsonantPlace.LABIO_DENTAL, True),
-    Consonant("ɹ", ConsonantType.APPROXIMANT, ConsonantPlace.ALVEOLAR, True),
-    Consonant("ɻ", ConsonantType.APPROXIMANT, ConsonantPlace.RETROFLEX, True),
+    Consonant(
+        "ɹ",
+        ConsonantType.APPROXIMANT,
+        ConsonantPlace.ALVEOLAR,
+        True,
+        sounds_like=ConsonantSoundsLike.R,
+    ),
+    Consonant(
+        "ɻ",
+        ConsonantType.APPROXIMANT,
+        ConsonantPlace.RETROFLEX,
+        True,
+        sounds_like=ConsonantSoundsLike.R,
+    ),
     Consonant("j", ConsonantType.APPROXIMANT, ConsonantPlace.PALATAL, True),
     Consonant("ɰ", ConsonantType.APPROXIMANT, ConsonantPlace.VELAR, True),
     #
     Consonant("ⱱ", ConsonantType.FLAP, ConsonantPlace.LABIO_DENTAL, True),
-    Consonant("ɾ", ConsonantType.FLAP, ConsonantPlace.ALVEOLAR, True),
-    Consonant("ɽ", ConsonantType.FLAP, ConsonantPlace.RETROFLEX, True),
+    Consonant(
+        "ɾ",
+        ConsonantType.FLAP,
+        ConsonantPlace.ALVEOLAR,
+        True,
+        sounds_like=ConsonantSoundsLike.R,
+    ),
+    Consonant(
+        "ɽ",
+        ConsonantType.FLAP,
+        ConsonantPlace.RETROFLEX,
+        True,
+        sounds_like=ConsonantSoundsLike.R,
+    ),
     #
     Consonant("ʙ", ConsonantType.TRILL, ConsonantPlace.BILABIAL, True),
-    Consonant("r", ConsonantType.TRILL, ConsonantPlace.ALVEOLAR, True),
-    Consonant("ʀ", ConsonantType.TRILL, ConsonantPlace.UVULAR, True),
+    Consonant(
+        "r",
+        ConsonantType.TRILL,
+        ConsonantPlace.ALVEOLAR,
+        True,
+        sounds_like=ConsonantSoundsLike.R,
+    ),
+    Consonant(
+        "ʀ",
+        ConsonantType.TRILL,
+        ConsonantPlace.UVULAR,
+        True,
+        sounds_like=ConsonantSoundsLike.R,
+    ),
     #
-    Consonant("l", ConsonantType.LATERAL_APPROXIMANT, ConsonantPlace.ALVEOLAR, True),
-    Consonant("ɫ", ConsonantType.LATERAL_APPROXIMANT, ConsonantPlace.ALVEOLAR, True),
-    Consonant("ɭ", ConsonantType.LATERAL_APPROXIMANT, ConsonantPlace.RETROFLEX, True),
+    Consonant(
+        "l",
+        ConsonantType.LATERAL_APPROXIMANT,
+        ConsonantPlace.ALVEOLAR,
+        True,
+        sounds_like=ConsonantSoundsLike.L,
+    ),
+    Consonant(
+        "ɫ",
+        ConsonantType.LATERAL_APPROXIMANT,
+        ConsonantPlace.ALVEOLAR,
+        True,
+        velarized=True,
+        sounds_like=ConsonantSoundsLike.L,
+    ),
+    Consonant(
+        "ɭ",
+        ConsonantType.LATERAL_APPROXIMANT,
+        ConsonantPlace.RETROFLEX,
+        True,
+        sounds_like=ConsonantSoundsLike.L,
+    ),
     Consonant("ʎ", ConsonantType.LATERAL_APPROXIMANT, ConsonantPlace.PALATAL, True),
-    Consonant("ʟ", ConsonantType.LATERAL_APPROXIMANT, ConsonantPlace.VELAR, True),
+    Consonant(
+        "ʟ",
+        ConsonantType.LATERAL_APPROXIMANT,
+        ConsonantPlace.VELAR,
+        True,
+        sounds_like=ConsonantSoundsLike.L,
+    ),
 ]
 
 CONSONANTS = {c.ipa: c for c in _CONSONANTS}
