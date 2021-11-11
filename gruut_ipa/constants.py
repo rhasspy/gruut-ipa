@@ -213,6 +213,14 @@ class BreakType(str, Enum):
     MAJOR = "major"  # ‖
 
 
+class PhonemeLength(str, Enum):
+    """Spoken length of a phoneme"""
+
+    SHORT = "short"  # ˑ
+    NORMAL = "normal"
+    LONG = "long"  # ː
+
+
 # -----------------------------------------------------------------------------
 
 
@@ -246,6 +254,10 @@ class Vowel:
     height: VowelHeight
     placement: VowelPlacement
     rounded: bool
+    nasalated: bool = False
+    stress: typing.Optional[Stress] = None
+    length: PhonemeLength = PhonemeLength.NORMAL
+    alias_of: typing.Optional[str] = None
 
 
 # -----------------------------------------------------------------
@@ -265,8 +277,7 @@ _VOWELS = [
     Vowel("i", VowelHeight.CLOSE, VowelPlacement.FRONT, False),
     Vowel("y", VowelHeight.CLOSE, VowelPlacement.FRONT, True),
     Vowel("ɨ", VowelHeight.CLOSE, VowelPlacement.CENTRAL, False),
-    # Alias of ɨ
-    Vowel("ᵻ", VowelHeight.CLOSE, VowelPlacement.CENTRAL, False),
+    Vowel("ᵻ", VowelHeight.CLOSE, VowelPlacement.CENTRAL, False, alias_of="ɨ"),
     Vowel("ʉ", VowelHeight.CLOSE, VowelPlacement.CENTRAL, True),
     Vowel("ɯ", VowelHeight.CLOSE, VowelPlacement.BACK, False),
     Vowel("u", VowelHeight.CLOSE, VowelPlacement.BACK, True),
@@ -276,6 +287,7 @@ _VOWELS = [
     Vowel("ʊ", VowelHeight.NEAR_CLOSE, VowelPlacement.NEAR_BACK, True),
     #
     Vowel("e", VowelHeight.CLOSE_MID, VowelPlacement.FRONT, False),
+    Vowel("ẽ", VowelHeight.CLOSE_MID, VowelPlacement.FRONT, False, nasalated=True),
     Vowel("ø", VowelHeight.CLOSE_MID, VowelPlacement.FRONT, True),
     Vowel("ɘ", VowelHeight.CLOSE_MID, VowelPlacement.CENTRAL, False),
     Vowel("ɵ", VowelHeight.CLOSE_MID, VowelPlacement.CENTRAL, True),
@@ -291,11 +303,13 @@ _VOWELS = [
     Vowel("ɞ", VowelHeight.OPEN_MID, VowelPlacement.CENTRAL, True),
     Vowel("ʌ", VowelHeight.OPEN_MID, VowelPlacement.BACK, False),
     Vowel("ɔ", VowelHeight.OPEN_MID, VowelPlacement.BACK, True),
+    Vowel("ɔ̃", VowelHeight.OPEN_MID, VowelPlacement.BACK, True, nasalated=True),
     #
     Vowel("æ", VowelHeight.NEAR_OPEN, VowelPlacement.FRONT, False),
     Vowel("ɐ", VowelHeight.NEAR_OPEN, VowelPlacement.CENTRAL, False),
     #
     Vowel("a", VowelHeight.OPEN, VowelPlacement.FRONT, False),
+    Vowel("ã", VowelHeight.OPEN, VowelPlacement.FRONT, False, nasalated=True),
     Vowel("ɶ", VowelHeight.OPEN, VowelPlacement.FRONT, True),
     Vowel("ɑ", VowelHeight.OPEN, VowelPlacement.BACK, False),
     Vowel("ɒ", VowelHeight.OPEN, VowelPlacement.BACK, True),
@@ -323,9 +337,11 @@ class Schwa:
 
     ipa: str
     r_coloured: bool
+    length: PhonemeLength = PhonemeLength.NORMAL
+    alias_of: typing.Optional[str] = None
 
 
-_SCHWAS = [Schwa("ə", False), Schwa("ɚ", True), Schwa("ɝ", True)]
+_SCHWAS = [Schwa("ə", False), Schwa("ɚ", True), Schwa("ɝ", True, alias_of="ɚ")]
 
 SCHWAS = {s.ipa: s for s in _SCHWAS}
 
@@ -380,6 +396,8 @@ class Consonant:
     voiced: bool
     velarized: bool = False
     sounds_like: ConsonantSoundsLike = ConsonantSoundsLike.NONE
+    length: PhonemeLength = PhonemeLength.NORMAL
+    alias_of: typing.Optional[str] = None
 
 
 # --------------------------------------------------------------------------------------------------------------------------------------------
@@ -426,6 +444,7 @@ _CONSONANTS = [
         ConsonantPlace.VELAR,
         True,
         sounds_like=ConsonantSoundsLike.G,
+        alias_of="ɡ",
     ),
     Consonant(
         "q",
@@ -570,3 +589,91 @@ _CONSONANTS = [
 ]
 
 CONSONANTS = {c.ipa: c for c in _CONSONANTS}
+
+# -----------------------------------------------------------------------------
+
+
+FEATURE_EMPTY = "NONE"
+
+FEATURE_COLUMNS: typing.Dict[str, typing.List[str]] = {
+    "symbol_type": ["phoneme", "break"],
+    "phoneme_type": [FEATURE_EMPTY, "vowel", "consonant", "schwa"],
+    "break_type": [FEATURE_EMPTY] + [v.value for v in BreakType],
+    "diacritic": [FEATURE_EMPTY, "nasalated", "velarized"],
+    "vowel_height": [FEATURE_EMPTY] + [v.value for v in VowelHeight],
+    "vowel_place": [FEATURE_EMPTY] + [v.value for v in VowelPlacement],
+    "vowel_rounded": [FEATURE_EMPTY, "rounded", "unrounded"],
+    "vowel_stress": [FEATURE_EMPTY] + [v.value for v in Stress],
+    "consonant_voiced": [FEATURE_EMPTY, "voiced", "unvoiced"],
+    "consonant_type": [FEATURE_EMPTY] + [v.value for v in ConsonantType],
+    "consonant_place": [FEATURE_EMPTY] + [v.value for v in ConsonantPlace],
+    "consonant_sounds_like": [FEATURE_EMPTY, "r", "l", "g", ""],
+    "phoneme_length": [FEATURE_EMPTY] + [v.value for v in PhonemeLength],
+}
+
+FEATURE_ORDINAL_COLUMNS: typing.Set[str] = {
+    "vowel_height",
+    "vowel_place",
+    "vowel_stress",
+    "consonant_type",
+    "consonant_place",
+    "break_type",
+    "phoneme_length",
+}
+
+
+def _make_feature_keys() -> typing.Mapping[str, typing.Union[int, slice]]:
+    """Create mapping from feature column name to vector index (ordinal) or slice (one-hot)"""
+    feature_keys: typing.Dict[str, typing.Union[int, slice]] = {}
+    offset = 0
+    for feature_col, feature_values in FEATURE_COLUMNS.items():
+        if feature_col in FEATURE_ORDINAL_COLUMNS:
+            feature_keys[feature_col] = offset
+            offset += 1
+        else:
+            feature_keys[feature_col] = slice(offset, offset + len(feature_values))
+            offset += len(feature_values)
+
+    return feature_keys
+
+
+FEATURE_KEYS = _make_feature_keys()
+
+
+def features_to_vector(features: typing.Mapping[str, str]) -> typing.Sequence[float]:
+    """Create phoneme feature vector from mapping"""
+    vector: typing.List[float] = []
+
+    for col, values in FEATURE_COLUMNS.items():
+        value = features.get(col, FEATURE_EMPTY)
+
+        if col in FEATURE_ORDINAL_COLUMNS:
+            # Single value normalized by number of possible values
+            vector.append(values.index(value) / len(values))
+        else:
+            # One-hot vector
+            for v in values:
+                vector.append(1.0 if (v == value) else 0.0)
+
+    return vector
+
+
+def vector_to_features(vector: typing.Sequence[float]) -> typing.Mapping[str, str]:
+    features: typing.Dict[str, str] = {}
+
+    for col_name, values in FEATURE_COLUMNS.items():
+        col_key = FEATURE_KEYS[col_name]
+        if col_name in FEATURE_ORDINAL_COLUMNS:
+            # Single value normalized by number of possible values
+            assert isinstance(col_key, int)
+            val_idx = int(vector[col_key] * len(values))
+        else:
+            # One-hot vector
+            assert isinstance(col_key, slice)
+            if 1.0 not in vector[col_key]:
+                assert False, (col_name, col_key, vector[col_key])
+            val_idx = vector[col_key].index(1.0)
+
+        features[col_name] = values[val_idx]
+
+    return features
