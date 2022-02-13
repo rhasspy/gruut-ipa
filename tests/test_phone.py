@@ -33,6 +33,17 @@ class PhoneTestCase(unittest.TestCase):
         self.assertEqual(phone.vowel.height, VowelHeight.OPEN)
         self.assertEqual(phone.vowel.placement, VowelPlacement.FRONT)
 
+    def test_eq(self):
+        self.assertTrue(Phone.from_string('t͡s') == Phone.from_string('t͡s'))
+        self.assertFalse(Phone.from_string('m') == Phone.from_string('ɐ'))
+
+    def test_hash(self):
+        phone1 = Phone.from_string('t͡s')
+        phone2 = Phone.from_string('m')
+
+        self.assertEqual(len({phone1, phone2}), 2)
+        self.assertEqual(len({phone1, phone1}), 1)
+
 
 # -----------------------------------------------------------------------------
 
