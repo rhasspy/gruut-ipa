@@ -176,6 +176,12 @@ class Phone:
     def __repr__(self) -> str:
         return self.text
 
+    def __eq__(self, other):
+        return isinstance(other, Phone) and self.text == other.text
+
+    def __hash__(self):
+        return hash(self.text)
+
     @staticmethod
     def from_string(phone_str: str) -> "Phone":
         """Parse phone from string"""
