@@ -17,48 +17,48 @@ class AccentTestCase(unittest.TestCase):
         """Test exact match"""
         guessed = guess_phonemes("k", self.de_phonemes)
 
-        self.assertEqual(len(guessed), 1)
-        self.assertEqual(guessed[0].text, "k")
+        self.assertEqual(len(guessed.phonemes), 1)
+        self.assertEqual(guessed.phonemes[0].text, "k")
 
     def test_letters(self):
         """Test matching letters"""
         guessed = guess_phonemes("ɐ̯ː", self.de_phonemes)
 
-        self.assertEqual(len(guessed), 1)
-        self.assertEqual(guessed[0].text, "ɐ")
+        self.assertEqual(len(guessed.phonemes), 1)
+        self.assertEqual(guessed.phonemes[0].text, "ɐ")
 
     def test_close_vowel(self):
         """Test nearby vowel"""
         guessed = guess_phonemes("ɑ", self.de_phonemes)
 
-        self.assertEqual(len(guessed), 1)
+        self.assertEqual(len(guessed.phonemes), 1)
 
         # Placement is more important that height
-        self.assertEqual(guessed[0].text, "a")
+        self.assertEqual(guessed.phonemes[0].text, "ɐ")
 
     def test_close_consonant(self):
         """Test nearby consonant"""
         guessed = guess_phonemes("ð", self.de_phonemes)
 
-        self.assertEqual(len(guessed), 1)
+        self.assertEqual(len(guessed.phonemes), 1)
 
         # Should match a nearby voiced consonant
-        self.assertIn(guessed[0].text, {"v", "z"})
+        self.assertIn(guessed.phonemes[0].text, {"v", "z"})
 
     def test_dipthong_letters_match(self):
         """Test dipthong (two vowels) with matching letters"""
         guessed = guess_phonemes("aʊ", self.de_phonemes)
 
-        self.assertEqual(len(guessed), 1)
-        self.assertEqual(guessed[0].text, "aʊ̯")
+        self.assertEqual(len(guessed.phonemes), 1)
+        self.assertEqual(guessed.phonemes[0].text, "aʊ̯")
 
     def test_dipthong_split(self):
         """Test dipthong (two vowels) split into two phonemes"""
         guessed = guess_phonemes("oʊ", self.de_phonemes)
 
-        self.assertEqual(len(guessed), 2)
-        self.assertEqual(guessed[0].text, "oː")
-        self.assertEqual(guessed[1].text, "ʊ")
+        self.assertEqual(len(guessed.phonemes), 2)
+        self.assertEqual(guessed.phonemes[0].text, "oː")
+        self.assertEqual(guessed.phonemes[1].text, "ʊ")
 
     def test_g(self):
         """Test ɡ/g mapping"""
@@ -67,8 +67,8 @@ class AccentTestCase(unittest.TestCase):
         for g in GS:
             guessed = guess_phonemes(g, self.de_phonemes)
 
-            self.assertEqual(len(guessed), 1)
-            self.assertIn(guessed[0].text, GS)
+            self.assertEqual(len(guessed.phonemes), 1)
+            self.assertIn(guessed.phonemes[0].text, GS)
 
     def test_r(self):
         """Test r-like mapping"""
@@ -77,8 +77,8 @@ class AccentTestCase(unittest.TestCase):
         for r in R_LIKE:
             guessed = guess_phonemes(r, self.de_phonemes)
 
-            self.assertEqual(len(guessed), 1)
-            self.assertIn(guessed[0].text, R_LIKE)
+            self.assertEqual(len(guessed.phonemes), 1)
+            self.assertIn(guessed.phonemes[0].text, R_LIKE)
 
     def test_schwa(self):
         """Test schwa mapping"""
@@ -88,8 +88,8 @@ class AccentTestCase(unittest.TestCase):
         for s in SCHWAS:
             guessed = guess_phonemes(s, self.de_phonemes)
 
-            self.assertEqual(len(guessed), 1)
-            self.assertIn(guessed[0].text, SCHWA_PREFERRED + R_LIKE)
+            self.assertEqual(len(guessed.phonemes), 1)
+            self.assertIn(guessed.phonemes[0].text, SCHWA_PREFERRED + R_LIKE)
 
 
 # -----------------------------------------------------------------------------

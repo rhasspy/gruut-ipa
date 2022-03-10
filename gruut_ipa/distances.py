@@ -50,9 +50,10 @@ def create_closest(
 
     # Adjust feature weights
     w[FEATURE_KEYS["vowel_place"]] = 0.5
-    w[FEATURE_KEYS["vowel_rounded"]] = 0.5
+    w[FEATURE_KEYS["vowel_height"]] = 1
+    w[FEATURE_KEYS["vowel_rounded"]] = 0.01
 
-    w[FEATURE_KEYS["consonant_place"]] = 0.05
+    w[FEATURE_KEYS["consonant_place"]] = 0.15
     w[FEATURE_KEYS["consonant_voiced"]] = 0.5
     w[FEATURE_KEYS["consonant_sounds_like"]] = 0.5
 
