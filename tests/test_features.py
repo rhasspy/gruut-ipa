@@ -9,11 +9,11 @@ from gruut_ipa import (
     VOWELS,
     Break,
     BreakType,
+    PhonemeLength,
     Stress,
     from_vector,
-    to_vector,
     string_to_symbol,
-    PhonemeLength,
+    to_vector,
 )
 
 

@@ -24,6 +24,7 @@ from gruut_ipa.constants import (  # noqa: F401
     ConsonantPlace,
     ConsonantType,
     Dipthong,
+    PhonemeLength,
     Schwa,
     Stress,
     Vowel,
@@ -31,7 +32,6 @@ from gruut_ipa.constants import (  # noqa: F401
     VowelPlacement,
     features_to_vector,
     vector_to_features,
-    PhonemeLength,
 )
 from gruut_ipa.espeak import espeak_to_ipa, ipa_to_espeak  # noqa: F401
 from gruut_ipa.sampa import ipa_to_sampa, sampa_to_ipa  # noqa: F401
