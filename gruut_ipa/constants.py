@@ -3,6 +3,11 @@ import typing
 import unicodedata
 from dataclasses import dataclass
 from enum import Enum
+from pathlib import Path
+
+_DIR = Path(__file__).parent
+
+_DATA_DIR = _DIR / "data"
 
 LANG_ALIASES = {
     "ar": "ar",
@@ -593,6 +598,68 @@ CONSONANTS = {c.ipa: c for c in _CONSONANTS}
 # -----------------------------------------------------------------------------
 
 
+@dataclass
+class Break:
+    """IPA break/boundary"""
+
+    type: BreakType
+    text: str = ""
+
+    def __post_init__(self):
+        if self.type == BreakType.MINOR:
+            self.text = IPA.BREAK_MINOR
+        elif self.type == BreakType.MAJOR:
+            self.text = IPA.BREAK_MAJOR
+        elif self.type == BreakType.WORD:
+            self.text = IPA.BREAK_WORD
+        else:
+            raise ValueError(f"Unrecognized break type: {type}")
+
+    @staticmethod
+    def from_string(break_str: str) -> "Break":
+        """Parse break from string"""
+        if break_str == IPA.BREAK_MINOR:
+            break_type = BreakType.MINOR
+        elif break_str == IPA.BREAK_MAJOR:
+            break_type = BreakType.MAJOR
+        elif break_str == IPA.BREAK_WORD:
+            break_type = BreakType.WORD
+        else:
+            raise ValueError(f"Unrecognized break type: {break_str}")
+
+        return Break(break_type)
+
+
+class Intonation:
+    """IPA rising/falling intonation"""
+
+    def __init__(self, rising: bool):
+        self.rising = rising
+
+        if self.rising:
+            self.text = IPA.INTONATION_RISING
+        else:
+            self.text = IPA.INTONATION_FALLING
+
+    def __repr__(self) -> str:
+        return self.text
+
+    @staticmethod
+    def from_string(intonation_str: str) -> "Intonation":
+        """Parse intonation from string"""
+        if intonation_str == IPA.INTONATION_RISING:
+            rising = True
+        elif intonation_str == IPA.INTONATION_FALLING:
+            rising = False
+        else:
+            raise ValueError(f"Unrecognized intonation type: {intonation_str}")
+
+        return Intonation(rising)
+
+
+# -----------------------------------------------------------------------------
+
+
 FEATURE_EMPTY = "NONE"
 
 FEATURE_COLUMNS: typing.Dict[str, typing.List[str]] = {
@@ -638,42 +705,3 @@ def _make_feature_keys() -> typing.Mapping[str, typing.Union[int, slice]]:
 
 
 FEATURE_KEYS = _make_feature_keys()
-
-
-def features_to_vector(features: typing.Mapping[str, str]) -> typing.Sequence[float]:
-    """Create phoneme feature vector from mapping"""
-    vector: typing.List[float] = []
-
-    for col, values in FEATURE_COLUMNS.items():
-        value = features.get(col, FEATURE_EMPTY)
-
-        if col in FEATURE_ORDINAL_COLUMNS:
-            # Single value normalized by number of possible values
-            vector.append(values.index(value) / len(values))
-        else:
-            # One-hot vector
-            for v in values:
-                vector.append(1.0 if (v == value) else 0.0)
-
-    return vector
-
-
-def vector_to_features(vector: typing.Sequence[float]) -> typing.Mapping[str, str]:
-    features: typing.Dict[str, str] = {}
-
-    for col_name, values in FEATURE_COLUMNS.items():
-        col_key = FEATURE_KEYS[col_name]
-        if col_name in FEATURE_ORDINAL_COLUMNS:
-            # Single value normalized by number of possible values
-            assert isinstance(col_key, int)
-            val_idx = int(vector[col_key] * len(values))
-        else:
-            # One-hot vector
-            assert isinstance(col_key, slice)
-            if 1.0 not in vector[col_key]:
-                assert False, (col_name, col_key, vector[col_key])
-            val_idx = vector[col_key].index(1.0)
-
-        features[col_name] = values[val_idx]
-
-    return features
