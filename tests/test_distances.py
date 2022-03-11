@@ -15,7 +15,7 @@ class DistancesTestCase(unittest.TestCase):
     def test_consonants(self):
         """Test distances for consonants"""
         self.assertEqual(get_closest("ɑ")[0], "ɒ")
-        self.assertEqual(get_closest("ʝ")[0], "j")
+        self.assertEqual(get_closest("ʝ")[0], "ç")
 
     def test_schwas(self):
         """Test distances for schwas"""

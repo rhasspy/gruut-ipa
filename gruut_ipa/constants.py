@@ -495,7 +495,9 @@ _CONSONANTS = [
     Consonant("ʂ", ConsonantType.FRICATIVE, ConsonantPlace.RETROFLEX, False),
     Consonant("ʐ", ConsonantType.FRICATIVE, ConsonantPlace.RETROFLEX, True),
     Consonant("ç", ConsonantType.FRICATIVE, ConsonantPlace.PALATAL, False),
-    Consonant("ʝ", ConsonantType.FRICATIVE, ConsonantPlace.PALATAL, False),
+    Consonant(
+        "ʝ", ConsonantType.FRICATIVE, ConsonantPlace.PALATAL, False, alias_of="ç"
+    ),
     Consonant("ʐ", ConsonantType.FRICATIVE, ConsonantPlace.PALATAL, True),
     Consonant("x", ConsonantType.FRICATIVE, ConsonantPlace.VELAR, False),
     Consonant("ɣ", ConsonantType.FRICATIVE, ConsonantPlace.VELAR, True),

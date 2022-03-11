@@ -61,7 +61,7 @@ def create_closest(
 
     dist_symbols = list(vectors.keys())
     closest = {
-        s: list(dist_symbols[j] for j in dist[i].argsort())[1:]
+        s: [dist_symbols[j] for j in dist[i].argsort() if s != dist_symbols[j]]
         for i, s in enumerate(dist_symbols)
     }
 
