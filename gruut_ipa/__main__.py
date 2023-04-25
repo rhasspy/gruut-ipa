@@ -231,6 +231,10 @@ def do_convert(args):
     if args.pronunciation:
         # From arguments
         pronunciations = args.pronunciation
+    elif args.input_file:
+        with open(args.input_file, 'r') as file:
+            pronunciations = file.readlines()
+            file.close()
     else:
         # From stdin
         pronunciations = sys.stdin
@@ -238,36 +242,42 @@ def do_convert(args):
         if os.isatty(sys.stdin.fileno()):
             print("Reading pronunciations from stdin...", file=sys.stderr)
 
-    for line in pronunciations:
-        line = line.strip()
-        if line:
-            if args.src == "ipa":
-                src_ipa = line
-            elif args.src == "espeak":
-                src_ipa = espeak_to_ipa(line)
-            elif args.src == "sampa":
-                src_ipa = sampa_to_ipa(line)
-            else:
-                assert src_phonemes is not None
-                src_ipa = args.separator.join(
-                    src_phonemes.gruut_ipa_map.get(p.text, p.text)
-                    for p in src_phonemes.split(line)
-                )
+    with open(args.output_file, 'w') as output_file:
+        for line in pronunciations:
+            line = line.strip()
+            #_LOGGER.debug(f"[TEST] line: {line}")
+            if line:
+                if args.src == "ipa":
+                    src_ipa = line
+                elif args.src == "espeak":
+                    src_ipa = espeak_to_ipa(line)
+                elif args.src == "sampa":
+                    src_ipa = sampa_to_ipa(line)
+                else:
+                    assert src_phonemes is not None
+                    src_ipa = args.separator.join(
+                        src_phonemes.gruut_ipa_map.get(p.text, p.text)
+                        for p in src_phonemes.split(line)
+                    )
 
-            if args.dest == "ipa":
-                dest_pron = src_ipa
-            elif args.dest == "espeak":
-                dest_pron = "[[" + ipa_to_espeak(src_ipa) + "]]"
-            elif args.dest == "sampa":
-                dest_pron = ipa_to_sampa(src_ipa)
-            else:
-                assert dest_phonemes is not None
-                dest_pron = args.separator.join(
-                    p.text for p in dest_phonemes.split(src_ipa, is_ipa=False)
-                )
+                if args.dest == "ipa":
+                    dest_pron = src_ipa
+                elif args.dest == "espeak":
+                    dest_pron = "[[" + ipa_to_espeak(src_ipa) + "]]"
+                elif args.dest == "sampa":
+                    dest_pron = ipa_to_sampa(src_ipa)
+                else:
+                    assert dest_phonemes is not None
+                    dest_pron = args.separator.join(
+                        p.text for p in dest_phonemes.split(src_ipa, is_ipa=False)
+                    )
 
-            print(dest_pron)
-            sys.stdout.flush()
+                print(dest_pron)
+                sys.stdout.flush()
+                output_file.write(dest_pron)
+                output_file.write('\n')
+        
+        output_file.close()
 
 
 # -----------------------------------------------------------------------------
@@ -369,6 +379,12 @@ def get_args() -> argparse.Namespace:
     )
     convert_parser.add_argument(
         "--separator", default=" ", help="Separator between phonemes (default: space)"
+    )
+    convert_parser.add_argument(
+        "--input_file", default=" ", help="Input file path"
+    )
+    convert_parser.add_argument(
+        "--output_file", default=" ", help="Output file path"
     )
 
     # Shared arguments
