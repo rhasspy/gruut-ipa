@@ -48,6 +48,7 @@ def do_print(args):
     if args.language:
         # Load phonemes using language code
         phonemes_path = _DATA_DIR / args.language / "phonemes.txt"
+        print("[TEST] phonemes_path {phonemes_path}")
 
         _LOGGER.debug("Loading phonemes from %s", phonemes_path)
         with open(phonemes_path, "r", encoding="utf-8") as phonemes_file:
@@ -175,6 +176,7 @@ def do_phonemes(args):
     else:
         # Load phonemes using language code
         phonemes_path = _DATA_DIR / args.language / "phonemes.txt"
+        print("[TEST] phonemes_path {phonemes_path}")
 
         # Check language support
         if not phonemes_path.is_file():
