@@ -675,9 +675,11 @@ class Phonemes:
     def from_language(language: str) -> "Phonemes":
         """Load phonemes for a given language"""
         language = resolve_lang(language)
+        print("[TEST] Load phonemes for language {language}")
 
         # Load phonemes themselves
         phonemes_path = _DATA_DIR / language / "phonemes.txt"
+        print("[TEST] phonemes_path {phonemes_path}")
         with open(phonemes_path, "r", encoding="utf-8") as phonemes_file:
             phonemes = Phonemes.from_text(phonemes_file)
 

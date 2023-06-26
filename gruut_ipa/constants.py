@@ -11,6 +11,7 @@ _DATA_DIR = _DIR / "data"
 
 LANG_ALIASES = {
     "ar": "ar",
+    "ca": "ca",
     "cs": "cs-cz",
     "de": "de-de",
     "en": "en-us",
